@@ -110,69 +110,152 @@
         /* ── Ship Plan View ───────────────────────────────────── */
         #ship-plan-container {
             width: 100%; height: 100%;
-            overflow: auto; position: relative;
-            background: #e8e8ed;
-            cursor: grab;
+            overflow-x: hidden;   /* ไม่ scroll แนวนอน */
+            overflow-y: auto;     /* scroll แนวตั้งระหว่าง Deck */
+            position: relative;
+            background: #edf0f4;
+            cursor: default;
         }
-        #ship-plan-container:active { cursor: grabbing; }
         #plan-zoom-wrapper {
-            display: inline-flex;
-            transform-origin: top left;
-            transition: transform 0.1s ease;
-            padding: 40px 60px;
-            align-items: stretch;
-            min-height: 100%;
-        }
-        .plan-hold-cell {
-            position: relative;
-            display: inline-flex;
+            display: flex;            /* ไม่ใช้ inline-flex → ยืดเต็มความกว้าง */
             flex-direction: column;
-            cursor: pointer;
-            transition: filter 0.2s;
-            flex-shrink: 0;
+            gap: 20px;
+            padding: 20px 24px 40px;
+            align-items: stretch;     /* Deck card ยืดเต็มความกว้าง */
+            width: 100%;
+            box-sizing: border-box;
+            /* ไม่มี transform → ไม่มีซูม */
         }
-        .plan-hold-cell:hover { filter: brightness(0.96); }
-        .plan-hold-cell .hold-canvas {
-            position: relative;
-            width: 100%; height: 100%;
-            overflow: hidden;
+
+        /* ─ Deck Unit (one card per deck) ─ */
+        .plan-deck-unit {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 14px 20px 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 6px rgba(0,0,0,0.07);
+            border: 1px solid rgba(0,0,0,0.07);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        .plan-hold-label {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px; font-weight: 900;
-            color: rgba(0,0,0,0.06);
-            pointer-events: none;
+
+        /* ─ Deck Header: "14  NO. 14 CAR DECK  Live: 3" ─ */
+        .plan-deck-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .plan-deck-num {
+            font-size: 26px;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .plan-deck-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+        .plan-live-badge {
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 9px;
+            border-radius: 99px;
+            letter-spacing: 0.04em;
+            border: 1px solid rgba(0,0,0,0.07);
+        }
+        .plan-live-badge.has-cargo {
+            background: #dcfce7;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        /* ─ SVG ship plan — ยืดเต็มความกว้างการ์ด ─ */
+        .plan-deck-svg {
+            display: block;
+            width: 100%;
+            height: auto;           /* ความสูงสัดส่วน viewBox อัตโนมัติ */
+            user-select: none;
+            overflow: visible;
+        }
+        /* Column labels (4 3 2 1) above hull */
+        .plan-col-label {
+            font-size: 13px;
+            font-weight: 800;
+            fill: rgba(100,116,139,0.70);
             letter-spacing: 0.1em;
-            white-space: nowrap;
-            font-family: -apple-system, BlinkMacSystemFont, 'Space Grotesk', sans-serif;
-            z-index: 0;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
         }
-        .plan-hold-badge {
-            position: absolute; top: 8px; left: 8px;
-            background: rgba(0,0,0,0.55);
-            color: #fff; font-size: 11px; font-weight: 800;
-            padding: 3px 9px; border-radius: 99px; z-index: 5;
-            letter-spacing: 0.05em;
+        /* PORT / STBD side labels */
+        .plan-side-text {
+            font-size: 9px;
+            font-weight: 900;
+            fill: rgba(148,163,184,0.75);
+            letter-spacing: 0.14em;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
         }
-        .plan-hold-count {
-            position: absolute; bottom: 8px; right: 8px;
-            background: rgba(0,0,0,0.45); color: #fff;
-            font-size: 10px; font-weight: 700;
-            padding: 2px 7px; border-radius: 99px; z-index: 5;
+        /* Ship hull outline */
+        .plan-hull {
+            fill: #fafbfc;
+            stroke: #1e293b;
+            stroke-width: 2;
+            stroke-linejoin: round;
         }
-        .plan-port-label {
-            position: absolute; left: -52px; top: 50%; transform: translateY(-50%);
-            writing-mode: vertical-rl; text-orientation: mixed;
-            font-size: 11px; font-weight: 800; letter-spacing: 0.15em;
-            color: rgba(0,0,0,0.25); pointer-events: none;
-            display: flex; flex-direction: column; gap: 8px;
+        /* PORT centerline dashed */
+        .plan-centerline {
+            stroke: rgba(148,163,184,0.5);
+            stroke-width: 1;
+            stroke-dasharray: 5 5;
         }
+        /* Hold dividers */
+        .plan-divider {
+            stroke: #94a3b8;
+            stroke-width: 1;
+            stroke-dasharray: 4 4;
+        }
+        /* Hover highlight per hold */
+        .plan-hold-target { cursor: pointer; }
+        .plan-hold-target .hold-bg { fill: transparent; transition: fill 0.15s; }
+        .plan-hold-target:hover .hold-bg { fill: rgba(59,130,246,0.07); }
+        /* Hold number badge (top-left inside each hold) */
+        .plan-hold-badge-rect { fill: rgba(15,23,42,0.50); rx: 8; }
+        .plan-hold-badge-text {
+            font-size: 9.5px;
+            font-weight: 800;
+            fill: #ffffff;
+            letter-spacing: 0.06em;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+        }
+        /* Car count badge (bottom-right) */
+        .plan-count-rect { fill: rgba(15,23,42,0.40); }
+        .plan-count-text {
+            font-size: 8.5px;
+            font-weight: 700;
+            fill: #ffffff;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+        }
+        /* Lock red border */
+        .plan-lock-border {
+            fill: none;
+            stroke: #ef4444;
+            stroke-width: 2.5;
+            pointer-events: none;
+        }
+
+        /* ─ Zoom Bar — ซ่อนใน overview mode ─ */
         .plan-zoom-bar {
+            display: none;   /* overview ไม่ใช้ zoom แล้ว */
             position: absolute; bottom: 16px; right: 16px;
-            z-index: 20; display: flex; align-items: center; gap: 4px;
-            background: rgba(255,255,255,0.9); backdrop-filter: blur(8px);
+            z-index: 20; align-items: center; gap: 4px;
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
             border: 1px solid rgba(0,0,0,0.1); border-radius: 10px;
             padding: 4px 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -187,21 +270,6 @@
         #plan-zoom-label {
             font-size: 11px; font-weight: 700; color: #666;
             min-width: 38px; text-align: center;
-        }
-        .plan-structure-line {
-            position: absolute;
-            background-color: #374151;
-            transform-origin: 0 0;
-            pointer-events: none;
-            z-index: 3;
-        }
-        .plan-port-divider {
-            position: absolute;
-            left: 0; right: 0;
-            top: 50%;
-            height: 1px;
-            background: repeating-linear-gradient(90deg, rgba(0,0,0,0.2) 0, rgba(0,0,0,0.2) 6px, transparent 6px, transparent 12px);
-            pointer-events: none; z-index: 2;
         }
         /* ── End Ship Plan View ───────────────────────────────── */
 
@@ -258,42 +326,48 @@
             display: block;
         }
 
-        /* Vehicle Body */
+        /* Vehicle Body — หน้าแหลม (pentagon arrow ชี้ขึ้น = หัวรถ) */
         .vehicle-body {
             width: 100%;
             height: 100%;
-            border-radius: 6px 6px 3px 3px;
-            /* โค้งมนที่ด้านหน้ามากกว่าด้านหลัง */
+            /* Pentagon: ปลายแหลมด้านบน = หัวรถ, ฐานแบนด้านล่าง = ท้ายรถ */
+            clip-path: polygon(50% 0%, 100% 24%, 100% 100%, 0% 100%, 0% 24%);
+            border-radius: 0 0 3px 3px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.5);
-            /* เพิ่มมิติและไฮไลท์หัวรถ */
-            border: 1px solid rgba(0, 0, 0, 0.4);
+            /* drop-shadow ตามรูปทรง clip-path ได้ */
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
+            border: 1px solid rgba(0, 0, 0, 0.35);
             position: relative;
+            /* ไฮไลท์หัวรถ — gradient จากบนลงล่าง */
+            background-image: linear-gradient(to bottom,
+                rgba(255,255,255,0.35) 0%,
+                rgba(255,255,255,0.10) 30%,
+                rgba(0,0,0,0.05) 100%);
         }
 
-        /* กระจกหน้า (Windshield) */
+        /* กระจกหน้า (Windshield) — อยู่ใต้หัวแหลมลงมา */
         .vehicle-body::before {
             content: '';
             position: absolute;
-            top: 15%;
-            width: 70%;
-            height: 20%;
-            background-color: rgba(255, 255, 255, 0.85);
-            border-radius: 4px 4px 1px 1px;
-            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.2);
+            top: 28%;     /* ต่ำกว่าหัวแหลมที่ 24% */
+            width: 62%;
+            height: 17%;
+            background-color: rgba(255, 255, 255, 0.80);
+            border-radius: 2px 2px 1px 1px;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
         }
 
         /* กระจกหลัง (Rear Window) */
         .vehicle-body::after {
             content: '';
             position: absolute;
-            bottom: 12%;
-            width: 60%;
-            height: 15%;
-            background-color: rgba(255, 255, 255, 0.5);
+            bottom: 10%;
+            width: 55%;
+            height: 13%;
+            background-color: rgba(255, 255, 255, 0.45);
             border-radius: 1px 1px 2px 2px;
         }
 
@@ -708,41 +782,45 @@
             z-index: 20;
         }
 
-        /* vehicle-body เหมือน Tally deck ทุกประการ */
+        /* yard-car-body — หน้าแหลมเหมือน vehicle-body */
         .car-slot .yard-car-body {
             width: 100%;
             flex: 1;
-            border-radius: 6px 6px 3px 3px;
+            clip-path: polygon(50% 0%, 100% 24%, 100% 100%, 0% 100%, 0% 24%);
+            border-radius: 0 0 3px 3px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(0, 0, 0, 0.4);
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.28));
+            border: 1px solid rgba(0, 0, 0, 0.35);
             position: relative;
-            overflow: hidden;
+            background-image: linear-gradient(to bottom,
+                rgba(255,255,255,0.35) 0%,
+                rgba(255,255,255,0.10) 30%,
+                rgba(0,0,0,0.05) 100%);
         }
 
         /* กระจกหน้า */
         .car-slot .yard-car-body::before {
             content: '';
             position: absolute;
-            top: 15%;
-            width: 70%;
-            height: 20%;
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 4px 4px 1px 1px;
-            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.2);
+            top: 28%;
+            width: 62%;
+            height: 17%;
+            background: rgba(255, 255, 255, 0.80);
+            border-radius: 2px 2px 1px 1px;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
         }
 
         /* กระจกหลัง */
         .car-slot .yard-car-body::after {
             content: '';
             position: absolute;
-            bottom: 12%;
-            width: 60%;
-            height: 15%;
-            background: rgba(255, 255, 255, 0.5);
+            bottom: 10%;
+            width: 55%;
+            height: 13%;
+            background: rgba(255, 255, 255, 0.45);
             border-radius: 1px 1px 2px 2px;
         }
 
@@ -976,6 +1054,90 @@
             z-index: 49;
             display: none;
             border-radius: 4px;
+        }
+
+        /* ====== COUNT MODE (นับยอด) ====== */
+        #btn-count-mode {
+            display: flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 8px;
+            font-size: 11px; font-weight: 600; cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.12);
+            background: rgba(0,0,0,0.04); color: #6e6e73;
+            font-family: -apple-system, BlinkMacSystemFont, 'Space Grotesk', 'Sarabun', sans-serif;
+            transition: all 0.2s;
+        }
+        #btn-count-mode.count-active {
+            background: rgba(234,179,8,0.18);
+            border-color: #d97706;
+            color: #92400e;
+        }
+        /* Polygon SVG overlay */
+        #polygon-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 52;
+            pointer-events: none;
+            overflow: visible;
+        }
+        #polygon-overlay.draw-active {
+            pointer-events: auto;
+            cursor: crosshair;
+            touch-action: none; /* ป้องกัน browser scroll ขณะวาด */
+        }
+        /* Count badge layer */
+        #count-badges-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 53;
+        }
+        .count-badge {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            min-width: 38px; min-height: 38px;
+            padding: 0 10px;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 16px; color: white;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.45), 0 0 0 2.5px white;
+            pointer-events: none;
+            animation: pop-in 0.22s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        /* Count mode hint bar */
+        #count-mode-hint {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(234,179,8,0.92); color: #3a2000;
+            padding: 5px 16px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+            pointer-events: auto; z-index: 56;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: none;
+            animation: pop-in 0.22s cubic-bezier(.34,1.56,.64,1) both;
+            display: flex; align-items: center; gap: 8px;
+        }
+        #count-mode-hint button {
+            pointer-events: auto;
+            border: none; cursor: pointer;
+            padding: 4px 12px; border-radius: 12px;
+            font-size: 11px; font-weight: 800;
+            transition: opacity 0.15s;
+        }
+        #count-mode-hint button:active { opacity: 0.75; }
+        /* Snap guide lines */
+        .snap-guide-h {
+            position: absolute; left: 0; right: 0; height: 1px;
+            background: #3b82f6; opacity: 0.8;
+            pointer-events: none; z-index: 54; display: none;
+            box-shadow: 0 0 5px rgba(59,130,246,0.9);
+        }
+        .snap-guide-v {
+            position: absolute; top: 0; bottom: 0; width: 1px;
+            background: #3b82f6; opacity: 0.8;
+            pointer-events: none; z-index: 54; display: none;
+            box-shadow: 0 0 5px rgba(59,130,246,0.9);
         }
 
         /* ====================================================
@@ -2263,6 +2425,11 @@
                         <i class="fa-solid fa-moon text-xs"></i>
                         <span>Dark</span>
                     </button>
+                    <!-- Count Mode นับยอด -->
+                    <button id="btn-count-mode" onclick="toggleCountMode()" title="นับยอดรถในพื้นที่ (วาดโพลิกอน)">
+                        <i class="fa-solid fa-draw-polygon text-xs"></i>
+                        <span>นับยอด</span>
+                    </button>
                 </div>
 
 
@@ -2316,6 +2483,17 @@
                                 <div class="marker-ring"></div>
                             </div>
                             <div id="selection-box"></div>
+                            <!-- Snap guide lines -->
+                            <div class="snap-guide-h" id="snap-guide-h"></div>
+                            <div class="snap-guide-v" id="snap-guide-v"></div>
+                            <!-- Count mode hint -->
+                            <div id="count-mode-hint" style="display:none;">
+                                <span id="count-hint-text">แตะวางจุด</span>
+                            </div>
+                            <!-- Polygon overlay SVG (count mode) -->
+                            <svg id="polygon-overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+                            <!-- Count badges -->
+                            <div id="count-badges-layer"></div>
                             <!-- Grid Lines -->
                             <div
                                 class="absolute top-1/2 left-0 right-0 border-t border-dashed border-gray-400 pointer-events-none opacity-50">
@@ -2344,12 +2522,6 @@
                         <div id="ship-plan-container">
                             <div id="plan-zoom-wrapper">
                                 <!-- rendered by JS -->
-                            </div>
-                            <!-- PORT/STBD side labels -->
-                            <div id="plan-side-labels" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;z-index:10;">
-                                <span style="font-size:10px;font-weight:900;color:rgba(0,0,0,0.3);letter-spacing:0.12em;">PORT</span>
-                                <div style="width:1px;height:40px;background:rgba(0,0,0,0.15);"></div>
-                                <span style="font-size:10px;font-weight:900;color:rgba(0,0,0,0.3);letter-spacing:0.12em;">STBD</span>
                             </div>
                             <!-- Zoom bar -->
                             <div class="plan-zoom-bar">
@@ -4173,6 +4345,8 @@
             if (holdNum === 'all') {
                 document.getElementById('stowage-area').classList.add('hidden');
                 document.getElementById('overview-area').classList.remove('hidden');
+                const zc = document.getElementById('zoom-controls');
+                if (zc) zc.classList.add('hidden');
 
                 document.getElementById('lock-hold-container').classList.add('hidden');
                 document.getElementById('properties-panel').classList.add('opacity-50', 'pointer-events-none');
@@ -4181,6 +4355,8 @@
             } else {
                 document.getElementById('overview-area').classList.add('hidden');
                 document.getElementById('stowage-area').classList.remove('hidden');
+                const zc = document.getElementById('zoom-controls');
+                if (zc) zc.classList.remove('hidden');
 
                 document.getElementById('lock-hold-container').classList.remove('hidden');
                 document.getElementById('undo-redo-container').classList.remove('opacity-50', 'pointer-events-none');
@@ -4228,11 +4404,14 @@
                 c.hold === newItem.hold && c.id !== ignoreId &&
                 c.type !== 'package' // ไม่เช็ค collision กับ package
             );
-            const buffer = 1;
             for (let c of items) {
                 const box2 = getBoundingBox(c);
-                if (box1.left < box2.right - buffer && box1.right > box2.left + buffer &&
-                    box1.top < box2.bottom - buffer && box1.bottom > box2.top + buffer) {
+                // แบคโฮ-แบคโฮ: อนุญาตให้บูมทับซ้อนกันได้ (หัวชนกัน/บูมชนกัน)
+                //   buf = 20 → ทับซ้อนได้ถึง 20px (บูมชนกัน) ก่อนจึง collision
+                // รถ-รถ ทั่วไป / รถ-แบคโฮ: buf = 1 (แตะกันได้)
+                const buf = (newItem.type === 'backhoe' && c.type === 'backhoe') ? 20 : 1;
+                if (box1.left < box2.right - buf && box1.right > box2.left + buf &&
+                    box1.top < box2.bottom - buf && box1.bottom > box2.top + buf) {
                     return true;
                 }
             }
@@ -4519,8 +4698,9 @@
             },
 
             startSelection(e) {
-                // ไม่ทำงานเมื่อ: อยู่ในโหมด overview, ล็อก
+                // ไม่ทำงานเมื่อ: อยู่ในโหมด overview, ล็อก, หรืออยู่ใน count mode
                 if (AppState.currentSelection.hold === 'all') return;
+                if (typeof isCountMode !== 'undefined' && isCountMode) return;
 
                 const area = document.getElementById('stowage-area');
                 if (!area) return;
@@ -4842,9 +5022,447 @@
         const origSelectHold = selectHold;
         selectHold = function (holdNum) {
             SelectionManager.clearSelection();
+            if (typeof clearCountGroups === 'function') clearCountGroups();
             if (typeof clearPlacementMarker === 'function') clearPlacementMarker();
             origSelectHold(holdNum);
         };
+
+        // ==========================================
+        // COUNT MODE (นับยอด) - POLYGON SELECTION
+        // ==========================================
+        let isCountMode = false;
+        let countGroups = [];           // [{points, selectedIds, centroid}]
+        let currentPolygonPoints = [];  // vertices of polygon being drawn
+        let polygonMovePoint = null;    // live mouse pos for rubber-line
+        const POLYGON_COLORS = ['#f59e0b','#3b82f6','#10b981','#ef4444','#8b5cf6','#f97316','#06b6d4','#ec4899'];
+
+        function toggleCountMode() {
+            isCountMode = !isCountMode;
+            const btn = document.getElementById('btn-count-mode');
+            const overlay = document.getElementById('polygon-overlay');
+            if (isCountMode) {
+                btn.classList.add('count-active');
+                overlay.classList.add('draw-active');
+                SelectionManager.clearSelection();
+                _updatePolygonControls();
+            } else {
+                btn.classList.remove('count-active');
+                overlay.classList.remove('draw-active');
+                const hint = document.getElementById('count-mode-hint');
+                if (hint) hint.style.display = 'none';
+                currentPolygonPoints = [];
+                polygonMovePoint = null;
+                clearCountGroups();
+            }
+            renderPolygonOverlay();
+        }
+
+        function clearCountGroups() {
+            countGroups = [];
+            const layer = document.getElementById('count-badges-layer');
+            if (layer) layer.innerHTML = '';
+            renderPolygonOverlay();
+            document.querySelectorAll('.draggable-item.multi-selected').forEach(el => el.classList.remove('multi-selected'));
+            SelectionManager.hideSummaryPopup();
+        }
+
+        function computeCentroid(pts) {
+            const x = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+            const y = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+            return { x, y };
+        }
+
+        function pointInPolygon(px, py, poly) {
+            let inside = false;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const xi = poly[i].x, yi = poly[i].y;
+                const xj = poly[j].x, yj = poly[j].y;
+                const intersect = ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            return inside;
+        }
+
+        function selectItemsInPolygon(poly) {
+            const { vesselId, deck, hold } = AppState.currentSelection;
+            return AppState.cargoData
+                .filter(c => c.vesselId === vesselId && c.deck === deck && c.hold === hold && ['car','backhoe'].includes(c.type))
+                .filter(c => pointInPolygon(c.x + (c.width||20)/2, c.y + (c.height||40)/2, poly))
+                .map(c => c.id);
+        }
+
+        function renderPolygonOverlay() {
+            const svg = document.getElementById('polygon-overlay');
+            if (!svg) return;
+            while (svg.firstChild) svg.removeChild(svg.firstChild);
+            const NS = 'http://www.w3.org/2000/svg';
+
+            // Draw completed polygon groups
+            countGroups.forEach((grp, idx) => {
+                if (grp.points.length < 2) return;
+                const color = POLYGON_COLORS[idx % POLYGON_COLORS.length];
+                const poly = document.createElementNS(NS, 'polygon');
+                poly.setAttribute('points', grp.points.map(p => `${p.x},${p.y}`).join(' '));
+                poly.setAttribute('fill', color + '22');
+                poly.setAttribute('stroke', color);
+                poly.setAttribute('stroke-width', '2');
+                poly.setAttribute('stroke-dasharray', '6 3');
+                poly.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(poly);
+            });
+
+            // Draw in-progress polygon
+            if (currentPolygonPoints.length > 0 && isCountMode) {
+                const color = POLYGON_COLORS[countGroups.length % POLYGON_COLORS.length];
+                const allPts = polygonMovePoint ? [...currentPolygonPoints, polygonMovePoint] : currentPolygonPoints;
+
+                if (allPts.length > 1) {
+                    const pl = document.createElementNS(NS, 'polyline');
+                    pl.setAttribute('points', allPts.map(p => `${p.x},${p.y}`).join(' '));
+                    pl.setAttribute('fill', 'none');
+                    pl.setAttribute('stroke', color);
+                    pl.setAttribute('stroke-width', '2');
+                    if (polygonMovePoint) pl.setAttribute('stroke-dasharray', '5 4');
+                    svg.appendChild(pl);
+                }
+
+                // ตรวจว่าเมาส์/นิ้วอยู่ใกล้จุดแรกหรือไม่ (snap-to-close indicator)
+                const CLOSE_SNAP = 20 / currentZoom; // 20px screen → stowage coords
+                let nearFirst = false;
+                if (currentPolygonPoints.length >= 2 && polygonMovePoint) {
+                    const fp = currentPolygonPoints[0];
+                    nearFirst = Math.sqrt((polygonMovePoint.x - fp.x) ** 2 + (polygonMovePoint.y - fp.y) ** 2) < CLOSE_SNAP;
+                }
+
+                // Vertex dots
+                currentPolygonPoints.forEach((p, i) => {
+                    // วงแหวน snap-to-close รอบจุดแรก
+                    if (i === 0 && nearFirst) {
+                        const ring = document.createElementNS(NS, 'circle');
+                        ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y);
+                        ring.setAttribute('r', String(13 / currentZoom));
+                        ring.setAttribute('fill', color + '30');
+                        ring.setAttribute('stroke', color);
+                        ring.setAttribute('stroke-width', String(2 / currentZoom));
+                        svg.appendChild(ring);
+                    }
+                    const circ = document.createElementNS(NS, 'circle');
+                    circ.setAttribute('cx', p.x); circ.setAttribute('cy', p.y);
+                    if (i === 0 && nearFirst) {
+                        // จุดแรก active: เต็มสี + ขอบขาว
+                        circ.setAttribute('r', String(7 / currentZoom));
+                        circ.setAttribute('fill', color);
+                        circ.setAttribute('stroke', 'white');
+                        circ.setAttribute('stroke-width', String(2.5 / currentZoom));
+                    } else {
+                        circ.setAttribute('r', i === 0 ? '6' : '4');
+                        circ.setAttribute('fill', i === 0 ? 'white' : color);
+                        circ.setAttribute('stroke', color);
+                        circ.setAttribute('stroke-width', '2');
+                    }
+                    svg.appendChild(circ);
+                });
+            }
+        }
+
+        function renderCountBadges() {
+            const layer = document.getElementById('count-badges-layer');
+            if (!layer) return;
+            layer.innerHTML = '';
+
+            countGroups.forEach((grp, idx) => {
+                const color = POLYGON_COLORS[idx % POLYGON_COLORS.length];
+                const items = grp.selectedIds.map(id => AppState.cargoData.find(c => c.id === id)).filter(Boolean);
+                if (items.length === 0) return;
+
+                // จัดกลุ่มตาม Port
+                const portGroups = {};
+                items.forEach(car => {
+                    const portObj = AppState.ports.find(p => p.id === car.portId);
+                    const portName = portObj ? portObj.name : 'Unassigned';
+                    const pColor = portObj ? portObj.color : '#94a3b8';
+                    if (!portGroups[portName]) portGroups[portName] = { color: pColor, models: {}, count: 0 };
+                    portGroups[portName].count++;
+                    const model = car.model?.trim() || 'Unknown';
+                    portGroups[portName].models[model] = (portGroups[portName].models[model] || 0) + 1;
+                });
+
+                // สร้าง summary card สำหรับแต่ละกลุ่ม
+                let portsHtml = '';
+                Object.entries(portGroups).forEach(([portName, pg]) => {
+                    const modelStr = Object.entries(pg.models)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([m, c]) => `${m}(${c})`)
+                        .join(' ');
+                    portsHtml += `
+                        <div style="margin-top:4px;border-top:1px solid rgba(255,255,255,0.12);padding-top:4px;">
+                            <div style="color:${pg.color};font-weight:800;font-size:11px;">${portName} — ${pg.count} คัน</div>
+                            <div style="color:rgba(255,255,255,0.65);font-size:9.5px;line-height:1.4;">${modelStr}</div>
+                        </div>`;
+                });
+
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    position:absolute;
+                    left:${grp.centroid.x}px;
+                    top:${grp.centroid.y}px;
+                    transform:translate(-50%,-50%);
+                    background:rgba(10,15,30,0.88);
+                    border:2px solid ${color};
+                    border-radius:12px;
+                    padding:8px 14px 10px;
+                    min-width:150px;
+                    max-width:220px;
+                    text-align:center;
+                    pointer-events:none;
+                    z-index:55;
+                    backdrop-filter:blur(6px);
+                    box-shadow:0 6px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+                    animation:pop-in 0.22s cubic-bezier(.34,1.56,.64,1) both;
+                `;
+                card.innerHTML = `
+                    <div style="color:${color};font-size:26px;font-weight:900;line-height:1;letter-spacing:-1px;">${items.length}</div>
+                    <div style="color:rgba(255,255,255,0.5);font-size:9px;font-weight:600;margin-top:1px;">พื้นที่ ${idx + 1}</div>
+                    ${portsHtml}
+                `;
+                layer.appendChild(card);
+            });
+        }
+
+        function finalizePolygon() {
+            if (currentPolygonPoints.length < 3) {
+                currentPolygonPoints = [];
+                polygonMovePoint = null;
+                renderPolygonOverlay();
+                return;
+            }
+            const pts = [...currentPolygonPoints];
+            const ids = selectItemsInPolygon(pts);
+            const centroid = computeCentroid(pts);
+            countGroups.push({ points: pts, selectedIds: ids, centroid });
+            currentPolygonPoints = [];
+            polygonMovePoint = null;
+
+            // Highlight all items across all groups
+            document.querySelectorAll('.draggable-item.multi-selected').forEach(el => el.classList.remove('multi-selected'));
+            const allIds = countGroups.flatMap(g => g.selectedIds);
+            allIds.forEach(id => {
+                const el = document.getElementById(`item-${id}`);
+                if (el) el.classList.add('multi-selected');
+            });
+            SelectionManager.selectedIds = allIds;
+
+            renderPolygonOverlay();
+            renderCountBadges();
+            showCountGroupsPopup();
+            _updatePolygonControls(); // รีเซ็ต hint bar หลังปิดพื้นที่
+        }
+
+        // แสดง summary popup แยกแต่ละกลุ่ม (ไม่รวมกัน)
+        function showCountGroupsPopup() {
+            const popup = document.getElementById('selection-summary-popup');
+            if (!popup || countGroups.length === 0) { SelectionManager.hideSummaryPopup(); return; }
+
+            let sectionsHtml = '';
+            let grandTotal = 0;
+
+            countGroups.forEach((grp, idx) => {
+                const color = POLYGON_COLORS[idx % POLYGON_COLORS.length];
+                const items = grp.selectedIds.map(id => AppState.cargoData.find(c => c.id === id)).filter(Boolean);
+                grandTotal += items.length;
+
+                // Port → Model grouping
+                const portGroups = {};
+                items.forEach(car => {
+                    const portObj = AppState.ports.find(p => p.id === car.portId);
+                    const portName = portObj ? portObj.name : 'Unassigned';
+                    const pColor = portObj ? portObj.color : '#94a3b8';
+                    if (!portGroups[portName]) portGroups[portName] = { color: pColor, models: {}, count: 0 };
+                    portGroups[portName].count++;
+                    const model = car.model?.trim() || 'Unknown';
+                    portGroups[portName].models[model] = (portGroups[portName].models[model] || 0) + 1;
+                });
+
+                let portHtml = '';
+                Object.entries(portGroups).sort((a,b) => a[0].localeCompare(b[0])).forEach(([portName, pg]) => {
+                    portHtml += `<div class="port-group">
+                        <div class="port-header">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <div style="width:8px;height:8px;border-radius:50%;background:${pg.color};flex-shrink:0;"></div>
+                                <span style="font-weight:800;font-size:11px;">${portName}</span>
+                            </div>
+                            <span style="font-weight:900;font-size:12px;color:#60a5fa;">${pg.count} คัน</span>
+                        </div>`;
+                    Object.entries(pg.models).sort((a,b) => a[0].localeCompare(b[0])).forEach(([model, count]) => {
+                        portHtml += `<div class="model-row">
+                            <span style="color:#94a3b8;">${model}</span>
+                            <span style="font-weight:700;font-family:monospace;color:#e2e8f0;">${count}</span>
+                        </div>`;
+                    });
+                    portHtml += `</div>`;
+                });
+
+                sectionsHtml += `
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:${color}22;border-radius:8px;border-left:3px solid ${color};margin-bottom:6px;">
+                            <span style="font-size:18px;font-weight:900;color:${color};">${items.length}</span>
+                            <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);">พื้นที่ ${idx + 1}</span>
+                        </div>
+                        ${portHtml}
+                    </div>`;
+            });
+
+            popup.innerHTML = `
+                <div class="sel-header">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div style="width:28px;height:28px;border-radius:8px;background:rgba(234,179,8,0.2);border:1px solid rgba(234,179,8,0.3);display:flex;align-items:center;justify-content:center;">
+                            <i class="fa-solid fa-draw-polygon" style="color:#eab308;font-size:12px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight:900;font-size:14px;">รวม ${grandTotal} คัน (${countGroups.length} พื้นที่)</div>
+                            <div style="font-size:10px;color:#64748b;">นับยอดแยกพื้นที่</div>
+                        </div>
+                    </div>
+                    <button onclick="toggleCountMode()" style="background:rgba(255,255,255,0.1);border:none;color:#94a3b8;cursor:pointer;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;transition:all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)';this.style.color='#ef4444'" onmouseout="this.style.background='rgba(255,255,255,0.1)';this.style.color='#94a3b8'">
+                        <i class="fa-solid fa-xmark"></i> ปิด
+                    </button>
+                </div>
+                <div class="sel-body">${sectionsHtml}</div>
+            `;
+            popup.style.display = 'block';
+        }
+
+        // ── อัพเดท hint bar + ปุ่ม tablet ────────────────────────────────────
+        function _updatePolygonControls() {
+            const hint = document.getElementById('count-mode-hint');
+            if (!hint) return;
+            if (!isCountMode) { hint.style.display = 'none'; return; }
+
+            hint.style.display = 'flex';
+            if (currentPolygonPoints.length >= 3) {
+                hint.innerHTML = `
+                    <span style="opacity:0.8;">📐 ${currentPolygonPoints.length} จุด</span>
+                    <button onclick="finalizePolygon()"
+                        style="background:#10b981;color:white;padding:5px 14px;border-radius:14px;font-size:12px;font-weight:800;">
+                        ✓ ปิดพื้นที่
+                    </button>
+                    <button onclick="currentPolygonPoints=[];polygonMovePoint=null;renderPolygonOverlay();_updatePolygonControls();"
+                        style="background:rgba(239,68,68,0.85);color:white;padding:5px 14px;border-radius:14px;font-size:12px;font-weight:800;">
+                        ✕ ยกเลิก
+                    </button>`;
+            } else if (currentPolygonPoints.length > 0) {
+                hint.innerHTML = `
+                    <span>📐 ${currentPolygonPoints.length} จุด — ต้องการอีก ${3 - currentPolygonPoints.length} จุด</span>
+                    <button onclick="currentPolygonPoints=[];polygonMovePoint=null;renderPolygonOverlay();_updatePolygonControls();"
+                        style="background:rgba(239,68,68,0.85);color:white;padding:5px 14px;border-radius:14px;font-size:12px;font-weight:800;">
+                        ✕ ยกเลิก
+                    </button>`;
+            } else {
+                hint.innerHTML = `
+                    <span>📐 แตะ/คลิกวางจุด · แตะ 2 ครั้งหรือ Enter ปิดพื้นที่</span>
+                    <button onclick="toggleCountMode()"
+                        style="background:rgba(0,0,0,0.3);color:white;padding:5px 14px;border-radius:14px;font-size:12px;font-weight:800;">
+                        ออก
+                    </button>`;
+            }
+        }
+
+        function initPolygonDraw() {
+            const overlay = document.getElementById('polygon-overlay');
+            if (!overlay) return;
+
+            let _lastTapTime = 0;
+            let _downX = null, _downY = null;
+            const TAP_MOVE_THRESH = 14; // px — เลื่อนเกินนี้ = drag ไม่ใช่ tap
+            const DOUBLE_TAP_MS  = 400;
+
+            // ── pointerdown: จำตำแหน่งเริ่มต้น ──────────────────────────────
+            overlay.addEventListener('pointerdown', function(e) {
+                if (!isCountMode || !e.isPrimary) return;
+                e.preventDefault();
+                _downX = e.clientX;
+                _downY = e.clientY;
+            }, { passive: false });
+
+            // ── pointermove: อัพเดทเส้นยาง (rubber-line) ────────────────────
+            overlay.addEventListener('pointermove', function(e) {
+                if (!isCountMode || !e.isPrimary) return;
+                if (currentPolygonPoints.length === 0) return;
+                const area = document.getElementById('stowage-area');
+                const aRect = area.getBoundingClientRect();
+                polygonMovePoint = {
+                    x: (e.clientX - aRect.left) / currentZoom,
+                    y: (e.clientY - aRect.top) / currentZoom
+                };
+                renderPolygonOverlay();
+            }, { passive: true });
+
+            // ── pointerup: วางจุด หรือปิดโพลิกอน (double-tap) ──────────────
+            overlay.addEventListener('pointerup', function(e) {
+                if (!isCountMode || !e.isPrimary) return;
+                if (_downX === null) return;
+
+                const dx = Math.abs(e.clientX - _downX);
+                const dy = Math.abs(e.clientY - _downY);
+                _downX = null; _downY = null;
+
+                // ถ้าเลื่อนนิ้วมากเกินไป → drag ไม่ใช่ tap → ข้าม
+                if (dx > TAP_MOVE_THRESH || dy > TAP_MOVE_THRESH) return;
+
+                const now = Date.now();
+                if (now - _lastTapTime < DOUBLE_TAP_MS) {
+                    // Double-tap → ปิดโพลิกอน
+                    _lastTapTime = 0;
+                    finalizePolygon();
+                    return;
+                }
+                _lastTapTime = now;
+
+                // Single tap → วางจุด (หรือปิดโพลิกอนอัตโนมัติถ้าแตะใกล้จุดแรก)
+                const area = document.getElementById('stowage-area');
+                const aRect = area.getBoundingClientRect();
+                const tapX = (e.clientX - aRect.left) / currentZoom;
+                const tapY = (e.clientY - aRect.top) / currentZoom;
+
+                // Auto-close: ถ้ามี ≥2 จุดแล้วและแตะใกล้จุดแรกภายใน 20px screen → ปิดอัตโนมัติ
+                if (currentPolygonPoints.length >= 2) {
+                    const fp = currentPolygonPoints[0];
+                    const screenDist = Math.sqrt((tapX - fp.x) ** 2 + (tapY - fp.y) ** 2) * currentZoom;
+                    if (screenDist < 20) {
+                        _lastTapTime = 0;
+                        finalizePolygon();
+                        return;
+                    }
+                }
+
+                currentPolygonPoints.push({ x: tapX, y: tapY });
+                renderPolygonOverlay();
+                _updatePolygonControls();
+            }, { passive: true });
+
+            // ── touchmove: ป้องกัน scroll ขณะวาดโพลิกอน ────────────────────
+            overlay.addEventListener('touchmove', function(e) {
+                if (isCountMode) e.preventDefault();
+            }, { passive: false });
+
+            // ── Keyboard (mouse/desktop): Esc ยกเลิก, Enter ปิดพื้นที่ ──────
+            document.addEventListener('keydown', function(e) {
+                if (!isCountMode) return;
+                if (e.key === 'Escape') {
+                    if (currentPolygonPoints.length > 0) {
+                        currentPolygonPoints = [];
+                        polygonMovePoint = null;
+                        renderPolygonOverlay();
+                        _updatePolygonControls();
+                    } else {
+                        toggleCountMode();
+                    }
+                } else if (e.key === 'Enter' && currentPolygonPoints.length >= 3) {
+                    finalizePolygon();
+                }
+            });
+        }
+        initPolygonDraw();
 
         // --- Search Logic ---
         async function searchVin() {
@@ -5108,13 +5726,13 @@
                                 <div class="absolute bottom-[5%] left-[20%] w-[60%] h-[45%] rounded-sm border border-black/30 z-10 shadow-inner flex justify-center pt-1" style="background-color: ${bgColor}">
                                     <div class="w-[80%] h-[40%] bg-blue-900/60 rounded-sm border border-blue-900/80"></div>
                                 </div>
-                                <!-- Arm -->
-                                <div class="absolute bottom-[50%] left-[42.5%] w-[15%] h-[35%] border-x border-black/30 z-0" style="background-color: ${bgColor}"></div>
-                                <!-- Bucket -->
-                                <div class="absolute top-0 left-[27.5%] w-[45%] h-[15%] bg-gray-600 rounded-sm border border-gray-800 z-0 flex justify-evenly overflow-hidden">
-                                    <div class="w-[15%] bg-gray-800 h-full"></div>
-                                    <div class="w-[15%] bg-gray-800 h-full"></div>
-                                    <div class="w-[15%] bg-gray-800 h-full"></div>
+                                <!-- Arm (right side) -->
+                                <div class="absolute bottom-[50%] right-[18%] w-[14%] h-[35%] border-x border-black/30 z-0" style="background-color: ${bgColor}"></div>
+                                <!-- Bucket (aligned to right arm) -->
+                                <div class="absolute top-0 right-[5%] w-[30%] h-[14%] bg-gray-600 rounded-sm border border-gray-800 z-0 flex justify-evenly overflow-hidden">
+                                    <div class="w-[18%] bg-gray-800 h-full"></div>
+                                    <div class="w-[18%] bg-gray-800 h-full"></div>
+                                    <div class="w-[18%] bg-gray-800 h-full"></div>
                                 </div>
                                 <!-- Centered content wrapper for VIN -->
                                 <div class="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
@@ -5246,6 +5864,72 @@
         let pendingDragItem = null;
         let pendingDragStartE = null;
 
+        // ── Auto-Snap helper ──────────────────────────────────────────────────
+        function snapPosition(item, newX, newY) {
+            const SNAP_DIST = 12; // เพิ่ม snap zone เล็กน้อย
+            const BOOM_OVERLAP = 15; // px — บูมทับซ้อนกันสำหรับ head-to-head backhoe
+
+            const { vesselId, deck, hold } = AppState.currentSelection;
+            const others = AppState.cargoData.filter(c =>
+                c.vesselId === vesselId && c.deck === deck && c.hold === hold && c.id !== item.id
+            );
+            const rot = ((item.rotation || 0) % 360 + 360) % 360;
+            const isH = rot === 90 || rot === 270;
+            const bw = isH ? (item.height || 40) : (item.width || 20);
+            const bh = isH ? (item.width || 20) : (item.height || 40);
+
+            let snapX = newX, snapY = newY;
+            let minDX = SNAP_DIST, minDY = SNAP_DIST;
+            let guideH = null, guideV = null;
+            const isBackhoe = item.type === 'backhoe';
+
+            others.forEach(other => {
+                const ob = getBoundingBox(other);
+                const otherIsBackhoe = other.type === 'backhoe';
+
+                // ── X-axis snap candidates ────────────────────────────────────
+                let xTargets = [
+                    [newX, ob.left], [newX, ob.right],
+                    [newX + bw, ob.left], [newX + bw, ob.right]
+                ];
+                // แบคโฮ-แบคโฮ: เพิ่ม snap ที่ตำแหน่ง "บูมชนกัน" (ทับซ้อน BOOM_OVERLAP px)
+                if (isBackhoe && otherIsBackhoe) {
+                    xTargets.push(
+                        [newX,       ob.right - BOOM_OVERLAP], // my-left = other-right - overlap (หัวชนหัว)
+                        [newX + bw,  ob.left  + BOOM_OVERLAP]  // my-right = other-left + overlap
+                    );
+                }
+                xTargets.forEach(([myE, otE]) => {
+                    const d = Math.abs(myE - otE);
+                    if (d < minDX) { minDX = d; snapX = newX + (otE - myE); guideV = otE; }
+                });
+
+                // ── Y-axis snap candidates ────────────────────────────────────
+                let yTargets = [
+                    [newY, ob.top], [newY, ob.bottom],
+                    [newY + bh, ob.top], [newY + bh, ob.bottom]
+                ];
+                if (isBackhoe && otherIsBackhoe) {
+                    yTargets.push(
+                        [newY,       ob.bottom - BOOM_OVERLAP], // บูมชนกันแนวตั้ง
+                        [newY + bh,  ob.top    + BOOM_OVERLAP]
+                    );
+                }
+                yTargets.forEach(([myE, otE]) => {
+                    const d = Math.abs(myE - otE);
+                    if (d < minDY) { minDY = d; snapY = newY + (otE - myE); guideH = otE; }
+                });
+            });
+
+            // Show/hide snap guide lines
+            const gh = document.getElementById('snap-guide-h');
+            const gv = document.getElementById('snap-guide-v');
+            if (gh) { if (guideH !== null) { gh.style.display = 'block'; gh.style.top = guideH + 'px'; } else { gh.style.display = 'none'; } }
+            if (gv) { if (guideV !== null) { gv.style.display = 'block'; gv.style.left = guideV + 'px'; } else { gv.style.display = 'none'; } }
+
+            return { x: snapX, y: snapY };
+        }
+
         function onDrag(e) {
             // ถ้ายังไม่เริ่ม drag จริง → เช็คว่า SelectionManager กำลัง selecting หรือไม่
             if (pendingDragItem && !dragItem) {
@@ -5265,8 +5949,12 @@
             }
             if (!dragItem) return;
             const rect = document.getElementById('stowage-area').getBoundingClientRect();
-            const newX = (e.clientX - rect.left) / currentZoom - dragOffset.x;
-            const newY = (e.clientY - rect.top) / currentZoom - dragOffset.y;
+            let newX = (e.clientX - rect.left) / currentZoom - dragOffset.x;
+            let newY = (e.clientY - rect.top) / currentZoom - dragOffset.y;
+
+            // Apply auto-snap alignment
+            const snapped = snapPosition(dragItem, newX, newY);
+            newX = snapped.x; newY = snapped.y;
 
             const el = document.getElementById(`item-${dragItem.id}`);
             el.style.left = newX + 'px';
@@ -5280,6 +5968,11 @@
                 pendingDragItem = null;
                 pendingDragStartE = null;
             }
+            // Hide snap guides
+            const gh = document.getElementById('snap-guide-h');
+            const gv = document.getElementById('snap-guide-v');
+            if (gh) gh.style.display = 'none';
+            if (gv) gv.style.display = 'none';
             if (dragItem) {
                 if (checkCollision(dragItem, dragItem.id)) {
                     dragItem.x = originalDragPos.x;
@@ -5801,85 +6494,322 @@
             XLSX.writeFile(wb, `CargoPlan_${vesselName.replace(/\s+/g, '_')}.xlsx`);
         }
 
-        async function exportToPDF() {
-            const { vesselId, deck, hold } = AppState.currentSelection;
-            if (!vesselId || !deck || !hold) return alert("กรุณาเลือก Deck และ Hold ให้เรียบร้อยก่อนทำการส่งออก PDF");
+        // ── PDF Export: open selection modal ──────────────────────────────────
+        function exportToPDF() {
+            const { vesselId } = AppState.currentSelection;
+            if (!vesselId) return alert("กรุณาเลือกเรือก่อนทำการส่งออก PDF");
+            const vessel = AppState.vessels.find(v => v.id === vesselId);
+            const numDecks = vessel ? (vessel.decks || 1) : 1;
+            // สร้าง deck checkboxes ตามเรือที่เลือก
+            let deckHtml = '';
+            for (let d = numDecks; d >= 1; d--) {
+                deckHtml += `<label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors select-none">
+                    <input type="checkbox" class="pdf-deck-cb accent-blue-600" value="${d}" checked>
+                    <span class="text-sm font-semibold text-gray-700">Deck ${d}</span>
+                </label>`;
+            }
+            document.getElementById('pdf-deck-checkboxes').innerHTML = deckHtml;
+            // reset holds to all checked
+            document.querySelectorAll('.pdf-hold-cb').forEach(cb => cb.checked = true);
+            document.getElementById('pdf-export-modal').classList.remove('hidden');
+        }
 
+        function closePDFExportModal() {
+            document.getElementById('pdf-export-modal').classList.add('hidden');
+        }
+
+        function _pdfSelectAll(checked) {
+            document.querySelectorAll('.pdf-deck-cb, .pdf-hold-cb').forEach(cb => cb.checked = checked);
+        }
+
+        function _hexToRgb(hex) {
+            const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+            return m ? { r: parseInt(m[1],16), g: parseInt(m[2],16), b: parseInt(m[3],16) } : { r: 148, g: 163, b: 184 };
+        }
+
+        // ── PDF Export: draw all selected holds programmatically ───────────────
+        async function _startPDFExport() {
+            const { vesselId } = AppState.currentSelection;
             const vessel = AppState.vessels.find(v => v.id === vesselId);
             const vesselName = vessel ? vessel.name : 'Vessel';
+            const cfg = AppState.planConfig || _loadPlanConfig();
 
-            const isOverview = hold === 'all';
-            let arrows = null;
-            let scrollBtns = null;
-            if (isOverview) {
-                arrows = document.getElementById('overview-area').querySelector('.flex.items-center.text-gray-500');
-                scrollBtns = document.getElementById('overview-area').querySelectorAll('button.absolute');
-                if (arrows) arrows.style.display = 'none';
-                if (scrollBtns) scrollBtns.forEach(b => b.style.display = 'none');
-            }
+            const selectedDecks = [...document.querySelectorAll('.pdf-deck-cb:checked')]
+                .map(cb => parseInt(cb.value)).sort((a, b) => b - a);
+            const selectedHolds = [...document.querySelectorAll('.pdf-hold-cb:checked')]
+                .map(cb => parseInt(cb.value)).sort((a, b) => a - b);
 
-            const element = isOverview ? document.getElementById('overview-content') : document.getElementById('stowage-area');
-            deselectAll();
+            if (!selectedDecks.length || !selectedHolds.length)
+                return alert('กรุณาเลือก Deck และ Hold อย่างน้อย 1 รายการ');
 
-            // ซ่อน UI elements ที่ไม่ต้องการใน PDF
-            const selBox = document.getElementById('selection-box');
-            const selFrame = document.getElementById('selection-frame');
-            const marker = document.getElementById('placement-marker');
-            if (selBox) selBox.style.display = 'none';
-            if (selFrame) selFrame.style.display = 'none';
-            if (marker) marker.style.display = 'none';
-
-            const filename = isOverview
-                ? `StowagePlan_${vesselName.replace(/\s+/g, '')}_Deck${deck}_ALL.pdf`
-                : `StowagePlan_${vesselName.replace(/\s+/g, '')}_Deck${deck}_Hold${hold}.pdf`;
-
-            const prevMsg = document.getElementById('confirm-msg').innerText;
-            document.getElementById('confirm-msg').innerText = "กำลังสร้างไฟล์ PDF...";
+            closePDFExportModal();
+            document.getElementById('confirm-msg').innerText =
+                `กำลังสร้าง PDF … (${selectedDecks.length * selectedHolds.length} หน้า)`;
             document.getElementById('confirm-modal').classList.remove('hidden');
             document.getElementById('confirm-btn-yes').style.display = 'none';
+            await new Promise(r => setTimeout(r, 80));
 
             try {
-                // จับภาพ element ด้วย html2canvas
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: isOverview ? '#e5e7eb' : '#ffffff',
-                    width: element.scrollWidth || element.offsetWidth,
-                    height: element.scrollHeight || element.offsetHeight
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const imgWidthPx = canvas.width;
-                const imgHeightPx = canvas.height;
-
-                // แปลง px → mm (96 dpi base, html2canvas scale=2)
-                const pxToMm = 25.4 / (96 * 2);
-                const pdfWidthMm = imgWidthPx * pxToMm + 10; // +margin
-                const pdfHeightMm = imgHeightPx * pxToMm + 10;
-                const orientation = pdfWidthMm > pdfHeightMm ? 'l' : 'p';
-
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: orientation,
-                    unit: 'mm',
-                    format: [pdfWidthMm, pdfHeightMm]
-                });
 
-                // วางภาพตรงกลาง (margin 5mm)
-                const imgW = pdfWidthMm - 10;
-                const imgH = pdfHeightMm - 10;
-                pdf.addImage(imgData, 'JPEG', 5, 5, imgW, imgH);
-                pdf.save(filename);
+                // A4 Landscape: 297 × 210 mm
+                const PW = 297, PH = 210, MG = 6;
+                const HDR = 13; // header bar height
+                const STOW_X = MG, STOW_Y = MG + HDR;
+                const STOW_W = PW - MG * 2, STOW_H = PH - MG * 2 - HDR;
+
+                const pdf = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+                let first = true;
+
+                for (const deck of selectedDecks) {
+                    for (const hold of selectedHolds) {
+                        if (!first) pdf.addPage();
+                        first = false;
+
+                        const holdItems = AppState.cargoData.filter(c =>
+                            c.vesselId === vesselId && c.deck === deck && c.hold === hold);
+                        const carItems = holdItems.filter(c => ['car', 'backhoe'].includes(c.type));
+
+                        const holdPxW = (cfg.holdWidths && cfg.holdWidths[hold]) || 800;
+                        const holdPxH = cfg.canvasHeight || 500;
+
+                        // Scale to fit stowage area (keep aspect ratio)
+                        const sc = Math.min(STOW_W / holdPxW, STOW_H / holdPxH);
+                        const drawW = holdPxW * sc;
+                        const drawH = holdPxH * sc;
+                        const drawX = STOW_X + (STOW_W - drawW) / 2;
+                        const drawY = STOW_Y;
+
+                        // ── Header bar ──────────────────────────────────────
+                        pdf.setFillColor(10, 20, 40);
+                        pdf.rect(MG, MG, PW - MG * 2, HDR, 'F');
+
+                        // Vessel name (left)
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(8.5);
+                        pdf.setTextColor(255, 255, 255);
+                        pdf.text(vesselName, MG + 4, MG + 8.5);
+
+                        // Date (below vessel name)
+                        const dateStr = new Date().toLocaleDateString('en-GB',
+                            { day: '2-digit', month: 'short', year: 'numeric' });
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setFontSize(6);
+                        pdf.setTextColor(140, 160, 190);
+                        pdf.text(dateStr, MG + 4, MG + HDR - 1.5);
+
+                        // Deck · Hold (center, large)
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(13);
+                        pdf.setTextColor(255, 255, 255);
+                        pdf.text(`DECK ${deck}   ·   HOLD ${hold}`, PW / 2, MG + 8.5, { align: 'center' });
+
+                        // Car count (right)
+                        pdf.setFontSize(9);
+                        pdf.setTextColor(80, 220, 150);
+                        pdf.text(`${carItems.length} คัน`, PW - MG - 4, MG + 8.5, { align: 'right' });
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setFontSize(6);
+                        pdf.setTextColor(140, 160, 190);
+                        pdf.text('รวมทั้งหมด', PW - MG - 4, MG + HDR - 1.5, { align: 'right' });
+
+                        // ── Stowage background & border ─────────────────────
+                        pdf.setFillColor(248, 250, 252);
+                        pdf.rect(drawX, drawY, drawW, drawH, 'F');
+
+                        // Grid lines (every 20 stowage-px)
+                        pdf.setDrawColor(222, 230, 240);
+                        pdf.setLineWidth(0.1);
+                        const gStep = 20 * sc;
+                        for (let gx = 0; gx <= drawW + 0.01; gx += gStep)
+                            pdf.line(drawX + gx, drawY, drawX + gx, drawY + drawH);
+                        for (let gy = 0; gy <= drawH + 0.01; gy += gStep)
+                            pdf.line(drawX, drawY + gy, drawX + drawW, drawY + gy);
+
+                        // Outer border
+                        pdf.setDrawColor(180, 195, 215);
+                        pdf.setLineWidth(0.5);
+                        pdf.rect(drawX, drawY, drawW, drawH, 'S');
+
+                        // PORT / STBD labels
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(5.5);
+                        pdf.setTextColor(100, 120, 145);
+                        pdf.text('◀ PORT', drawX + 2, drawY + 5);
+                        pdf.text('▶ STBD', drawX + 2, drawY + drawH - 2);
+
+                        // ── Draw cargo items ────────────────────────────────
+                        holdItems.forEach(item => {
+                            if (item.type === 'pillar') {
+                                const cx = (item.x + (item.width || 20) / 2) * sc + drawX;
+                                const cy = (item.y + (item.height || 20) / 2) * sc + drawY;
+                                const r = Math.max(0.6, (item.width || 20) / 2 * sc);
+                                pdf.setFillColor(71, 85, 105);
+                                pdf.circle(cx, cy, r, 'F');
+                                return;
+                            }
+                            if (item.type === 'ramp' || item.type === 'package') {
+                                const bb = getBoundingBox(item);
+                                const rx = drawX + bb.left * sc, ry = drawY + bb.top * sc;
+                                const rw = (bb.right - bb.left) * sc, rh = (bb.bottom - bb.top) * sc;
+                                pdf.setFillColor(item.type === 'ramp' ? 180 : 200, 190, 195);
+                                pdf.rect(rx, ry, rw, rh, 'F');
+                                pdf.setDrawColor(120, 120, 130);
+                                pdf.setLineWidth(0.15);
+                                pdf.rect(rx, ry, rw, rh, 'S');
+                                if (item.type === 'ramp' && rw > 4) {
+                                    pdf.setFontSize(4); pdf.setTextColor(60, 60, 70);
+                                    pdf.text('RAMP', rx + rw / 2, ry + rh / 2 + 1, { align: 'center' });
+                                }
+                                return;
+                            }
+                            if (item.type !== 'car' && item.type !== 'backhoe') return;
+
+                            const port = AppState.ports.find(p => p.id === item.portId);
+                            const pc = _hexToRgb(port?.color || '#94a3b8');
+
+                            const bb = getBoundingBox(item);
+                            const rx = drawX + bb.left * sc, ry = drawY + bb.top * sc;
+                            const rw = (bb.right - bb.left) * sc, rh = (bb.bottom - bb.top) * sc;
+                            if (rw < 0.5 || rh < 0.5) return;
+
+                            // Light port-color fill
+                            pdf.setFillColor(
+                                Math.round(pc.r * 0.25 + 255 * 0.75),
+                                Math.round(pc.g * 0.25 + 255 * 0.75),
+                                Math.round(pc.b * 0.25 + 255 * 0.75)
+                            );
+                            pdf.rect(rx, ry, rw, rh, 'F');
+
+                            // Port-color border
+                            pdf.setDrawColor(pc.r, pc.g, pc.b);
+                            pdf.setLineWidth(0.28);
+                            pdf.rect(rx, ry, rw, rh, 'S');
+
+                            // VIN label (last 5 chars)
+                            const label = item.vin
+                                ? item.vin.slice(-5)
+                                : (item.type === 'backhoe' ? 'BH' : '');
+                            if (label && rw > 2.5 && rh > 1.5) {
+                                const fs = Math.max(3, Math.min(5, rw * 0.85));
+                                pdf.setFontSize(fs);
+                                pdf.setTextColor(20, 20, 20);
+                                pdf.setFont('helvetica', 'normal');
+                                pdf.text(label, rx + rw / 2, ry + rh / 2 + fs * 0.2, { align: 'center' });
+                            }
+                        });
+
+                        // ── Summary box (bottom-left of stowage area) ───────
+                        const portMap = {}, modelMap = {};
+                        carItems.forEach(c => {
+                            const pObj = AppState.ports.find(p => p.id === c.portId);
+                            const pName = pObj ? pObj.name : 'Unassigned';
+                            portMap[pName] = { count: (portMap[pName]?.count || 0) + 1, color: pObj?.color || '#94a3b8' };
+                            const mName = (c.model || 'Unknown').trim();
+                            modelMap[mName] = (modelMap[mName] || 0) + 1;
+                        });
+                        const portEntries  = Object.entries(portMap).sort((a, b) => b[1].count - a[1].count);
+                        const modelEntries = Object.entries(modelMap).sort((a, b) => b[1] - a[1]);
+
+                        const ROW = 3.8;
+                        const SUM_W = 72;
+                        const SUM_H = Math.min(drawH - 4,
+                            9 + 5 + portEntries.length * ROW + 5 + modelEntries.length * ROW + 10);
+                        const SUM_X = drawX + 2;
+                        const SUM_Y = drawY + drawH - SUM_H - 2;
+
+                        // Dark background
+                        pdf.setFillColor(8, 16, 32);
+                        pdf.roundedRect(SUM_X, SUM_Y, SUM_W, SUM_H, 2.5, 2.5, 'F');
+                        pdf.setDrawColor(35, 60, 100);
+                        pdf.setLineWidth(0.3);
+                        pdf.roundedRect(SUM_X, SUM_Y, SUM_W, SUM_H, 2.5, 2.5, 'S');
+
+                        let sy = SUM_Y + 6;
+
+                        // "SUMMARY" title
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(6.5);
+                        pdf.setTextColor(255, 255, 255);
+                        pdf.text('SUMMARY', SUM_X + SUM_W / 2, sy, { align: 'center' });
+                        sy += 2.5;
+                        pdf.setDrawColor(40, 65, 105);
+                        pdf.setLineWidth(0.2);
+                        pdf.line(SUM_X + 3, sy + 1, SUM_X + SUM_W - 3, sy + 1);
+                        sy += 4;
+
+                        // PORT section
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(5.5);
+                        pdf.setTextColor(90, 170, 255);
+                        pdf.text('▸ PORT', SUM_X + 3, sy);
+                        sy += ROW;
+
+                        portEntries.forEach(([name, { count, color }]) => {
+                            if (sy > SUM_Y + SUM_H - 13) return;
+                            const pc2 = _hexToRgb(color);
+                            // color dot
+                            pdf.setFillColor(pc2.r, pc2.g, pc2.b);
+                            pdf.circle(SUM_X + 5, sy - 1.2, 1, 'F');
+                            pdf.setFont('helvetica', 'normal');
+                            pdf.setFontSize(5.5);
+                            pdf.setTextColor(205, 218, 235);
+                            const tn = name.length > 17 ? name.slice(0, 16) + '…' : name;
+                            pdf.text(tn, SUM_X + 7.5, sy);
+                            pdf.setFont('helvetica', 'bold');
+                            pdf.setTextColor(255, 255, 255);
+                            pdf.text(String(count), SUM_X + SUM_W - 3, sy, { align: 'right' });
+                            sy += ROW;
+                        });
+
+                        // Divider
+                        sy += 1;
+                        pdf.setDrawColor(40, 65, 105);
+                        pdf.setLineWidth(0.2);
+                        pdf.line(SUM_X + 3, sy, SUM_X + SUM_W - 3, sy);
+                        sy += 3.5;
+
+                        // MODEL section
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(5.5);
+                        pdf.setTextColor(80, 220, 160);
+                        pdf.text('▸ MODEL', SUM_X + 3, sy);
+                        sy += ROW;
+
+                        modelEntries.forEach(([name, count]) => {
+                            if (sy > SUM_Y + SUM_H - 9) return;
+                            pdf.setFont('helvetica', 'normal');
+                            pdf.setFontSize(5.5);
+                            pdf.setTextColor(205, 218, 235);
+                            const tn = name.length > 17 ? name.slice(0, 16) + '…' : name;
+                            pdf.text(tn, SUM_X + 5, sy);
+                            pdf.setFont('helvetica', 'bold');
+                            pdf.setTextColor(255, 255, 255);
+                            pdf.text(String(count), SUM_X + SUM_W - 3, sy, { align: 'right' });
+                            sy += ROW;
+                        });
+
+                        // Total row (pinned to bottom of box)
+                        const totY = SUM_Y + SUM_H;
+                        pdf.setDrawColor(55, 80, 120);
+                        pdf.line(SUM_X + 3, totY - 8.5, SUM_X + SUM_W - 3, totY - 8.5);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(7);
+                        pdf.setTextColor(255, 210, 70);
+                        pdf.text('รวม', SUM_X + 3, totY - 3.5);
+                        pdf.text(`${carItems.length} คัน`, SUM_X + SUM_W - 3, totY - 3.5, { align: 'right' });
+                    }
+                }
+
+                pdf.save(`StowagePlan_${vesselName.replace(/\s+/g, '_')}.pdf`);
+
             } catch (err) {
                 console.error('PDF export error:', err);
                 alert('เกิดข้อผิดพลาดในการสร้าง PDF: ' + err.message);
             } finally {
-                // คืนค่า UI
-                if (arrows) arrows.style.display = 'flex';
-                if (scrollBtns) scrollBtns.forEach(b => b.style.display = 'flex');
                 document.getElementById('confirm-modal').classList.add('hidden');
-                document.getElementById('confirm-msg').innerText = prevMsg;
                 document.getElementById('confirm-btn-yes').style.display = 'block';
+                document.getElementById('confirm-msg').innerText = 'ยืนยันการดำเนินการ?';
             }
         }
 
@@ -5933,9 +6863,14 @@
             showToast('บันทึกการตั้งค่าผังเรือแล้ว ✓', 'ok');
         }
 
-        // ─── Plan Zoom ────────────────────────────────────────────────────────
+        // ─── Plan Zoom (ใช้เฉพาะ single-hold mode เท่านั้น) ─────────────────
         let planZoom = 0.7;
+        function _isOverviewMode() {
+            return AppState.currentSelection.hold === 'all';
+        }
         function _applyPlanZoom() {
+            // overview mode ไม่มี zoom transform — SVG ยืดเต็มความกว้างเอง
+            if (_isOverviewMode()) return;
             const w = document.getElementById('plan-zoom-wrapper');
             if (w) w.style.transform = `scale(${planZoom})`;
             const lbl = document.getElementById('plan-zoom-label');
@@ -5950,18 +6885,20 @@
             _applyPlanZoom();
         }
 
-        // ─── Pinch-to-zoom on ship plan ─────────────────────────────────────
+        // ─── Pinch-to-zoom on ship plan (single-hold only) ──────────────────
         (function initPlanPinch() {
             let _initDist = 0, _initZoom = 0.7;
             document.addEventListener('touchstart', function(e) {
                 const cont = document.getElementById('ship-plan-container');
                 if (!cont || !cont.contains(e.target) || e.touches.length !== 2) return;
+                if (_isOverviewMode()) return;   // overview: ปล่อยให้ touch-scroll ปกติ
                 _initDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 _initZoom = planZoom;
             }, { passive: true });
             document.addEventListener('touchmove', function(e) {
                 const cont = document.getElementById('ship-plan-container');
                 if (!cont || !cont.contains(e.target) || e.touches.length !== 2) return;
+                if (_isOverviewMode()) return;   // overview: ปล่อยให้ scroll ปกติ
                 e.preventDefault();
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 planZoom = Math.min(2, Math.max(0.2, _initZoom * (dist / _initDist)));
@@ -5969,143 +6906,437 @@
             }, { passive: false });
         })();
 
-        // ─── Wheel zoom on ship plan ─────────────────────────────────────────
+        // ─── Wheel: zoom (single-hold) หรือ scroll (overview) ───────────────
         document.addEventListener('wheel', function(e) {
             const cont = document.getElementById('ship-plan-container');
             if (!cont || !cont.contains(e.target)) return;
+            if (_isOverviewMode()) return;  // overview → browser scroll ปกติ (ไม่ preventDefault)
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             planZoom = Math.min(2, Math.max(0.2, planZoom + delta));
             _applyPlanZoom();
         }, { passive: false, capture: true });
 
-        // ─── Pan drag on ship plan ───────────────────────────────────────────
+        // ─── Pan/Scroll drag on ship plan ────────────────────────────────────
+        // overview mode: ลาก scroll แนวตั้ง (ระหว่าง Deck)
+        // single-hold mode: ลาก pan (แนวนอน+แนวตั้ง ถ้ามี overflow)
         (function initPlanPan() {
-            let _isPanning = false, _startX = 0, _startY = 0, _scrollLeft = 0, _scrollTop = 0;
+            let _isDragging = false, _startX = 0, _startY = 0, _scrollLeft = 0, _scrollTop = 0;
             document.addEventListener('mousedown', function(e) {
                 const cont = document.getElementById('ship-plan-container');
-                if (!cont || !cont.contains(e.target) || e.target.closest('button') || e.target.closest('.plan-hold-cell')) return;
-                _isPanning = true;
+                if (!cont || !cont.contains(e.target) || e.target.closest('button') || e.target.closest('.plan-hold-target')) return;
+                _isDragging = true;
                 cont.style.cursor = 'grabbing';
                 _startX = e.clientX; _startY = e.clientY;
                 _scrollLeft = cont.scrollLeft; _scrollTop = cont.scrollTop;
+                e.preventDefault();
             });
             document.addEventListener('mousemove', function(e) {
-                if (!_isPanning) return;
+                if (!_isDragging) return;
                 const cont = document.getElementById('ship-plan-container');
                 if (!cont) return;
-                cont.scrollLeft = _scrollLeft - (e.clientX - _startX);
-                cont.scrollTop = _scrollTop - (e.clientY - _startY);
+                const dx = e.clientX - _startX;
+                const dy = e.clientY - _startY;
+                if (!_isOverviewMode()) cont.scrollLeft = _scrollLeft - dx;
+                cont.scrollTop = _scrollTop - dy;
             });
             document.addEventListener('mouseup', function() {
-                if (!_isPanning) return;
-                _isPanning = false;
+                if (!_isDragging) return;
+                _isDragging = false;
                 const cont = document.getElementById('ship-plan-container');
-                if (cont) cont.style.cursor = 'grab';
+                if (cont) cont.style.cursor = 'default';
             });
         })();
 
+        // ─── renderOverview — SVG ship plan, all decks stacked vertically ────────
         function renderOverview() {
-            const container = document.getElementById('plan-zoom-wrapper');
-            if (!container) return;
-            container.innerHTML = '';
-            _applyPlanZoom();
+            const wrapper = document.getElementById('plan-zoom-wrapper');
+            if (!wrapper) return;
+            wrapper.innerHTML = '';
+            wrapper.style.transform = '';   // reset zoom transform เดิม
 
-            const { vesselId, deck } = AppState.currentSelection;
+            const { vesselId, deck: currentDeck } = AppState.currentSelection;
+            const vessel = AppState.vessels.find(v => v.id === vesselId);
+            if (!vessel) return;
+
             const cfg = AppState.planConfig;
-            const allItems = AppState.cargoData.filter(c => c.vesselId === vesselId && c.deck === deck);
+            const allVesselItems = AppState.cargoData.filter(c => c.vesselId === vesselId);
 
-            // H4 (stern/left) → H3 → H2 → H1 (bow/right)
-            for (let i = 4; i >= 1; i--) {
-                const holdKey = `${vesselId}_${deck}_${i}`;
+            // Render decks from top (highest number) to bottom (deck 1)
+            for (let deckNum = vessel.decks; deckNum >= 1; deckNum--) {
+                const deckItems = allVesselItems.filter(c => c.deck === deckNum);
+                const unit = _buildDeckUnit(vesselId, deckNum, cfg, deckItems);
+                wrapper.appendChild(unit);
+            }
+
+            // Auto-scroll ไปที่ Deck ปัจจุบัน (ไม่ต้อง * zoom เพราะไม่มี transform แล้ว)
+            requestAnimationFrame(() => {
+                const shipCont = document.getElementById('ship-plan-container');
+                const targetEl = wrapper.querySelector(`.plan-deck-unit[data-deck="${currentDeck}"]`);
+                if (shipCont && targetEl) {
+                    shipCont.scrollTop = Math.max(0, targetEl.offsetTop - 16);
+                }
+            });
+        }
+
+        // ─── Build one deck card (header + SVG ship hull) ─────────────────────
+        function _buildDeckUnit(vesselId, deckNum, cfg, deckItems) {
+            const NS = 'http://www.w3.org/2000/svg';
+
+            // ── Geometry ───────────────────────────────────────────────────────
+            const w4 = cfg.holdWidths[4] || 800;
+            const w3 = cfg.holdWidths[3] || 800;
+            const w2 = cfg.holdWidths[2] || 800;
+            const w1 = cfg.holdWidths[1] || 800;
+            const H  = cfg.canvasHeight || 500;
+
+            // Horizontal x-start for each hold (stern→bow: 4,3,2,1)
+            const x4s = 0,       x4e = w4;
+            const x3s = x4e,     x3e = x3s + w3;
+            const x2s = x3e,     x2e = x2s + w2;
+            const x1s = x2e,     x1e = x1s + w1;
+
+            // Bow curve extends right past hold-1 rectangle
+            const bowExt  = Math.round(w1 * 0.22);   // extra width for curved bow
+            const bowStart = x1s + Math.round(w1 * 0.72); // where flat top ends → curve begins
+
+            const LABEL_H = 38;   // height above hull for column numbers
+            const PORT_W  = 28;   // left margin for PORT/STBD label
+            const svgW    = PORT_W + x1e + bowExt + 4;  // total SVG width
+            const svgH    = LABEL_H + H;
+
+            // Hull y coords
+            const hullTop = LABEL_H;
+            const hullBot = LABEL_H + H;
+            const hullMid = LABEL_H + H / 2;
+            const tipX    = PORT_W + x1e + bowExt;
+
+            // ── Deck header ────────────────────────────────────────────────────
+            const liveCount = deckItems.filter(c => c.type === 'car' || c.type === 'backhoe').length;
+
+            const unit = document.createElement('div');
+            unit.className = 'plan-deck-unit';
+            unit.dataset.deck = deckNum;
+
+            const header = document.createElement('div');
+            header.className = 'plan-deck-header';
+            header.innerHTML =
+                `<span class="plan-deck-num">${deckNum}</span>` +
+                `<span class="plan-deck-title">NO. ${deckNum} CAR DECK</span>` +
+                `<span class="plan-live-badge${liveCount > 0 ? ' has-cargo' : ''}">Live: ${liveCount}</span>`;
+            unit.appendChild(header);
+
+            // ── SVG ────────────────────────────────────────────────────────────
+            const svg = document.createElementNS(NS, 'svg');
+            svg.setAttribute('width',   '100%');   // ยืดเต็มความกว้างการ์ด
+            svg.setAttribute('height',  'auto');   // ความสูงสัดส่วน viewBox อัตโนมัติ
+            svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svg.setAttribute('class',   'plan-deck-svg');
+
+            // Defs: grid pattern + ramp pattern
+            const defs = document.createElementNS(NS, 'defs');
+            defs.innerHTML = `
+              <pattern id="grid-${deckNum}" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/>
+              </pattern>
+              <pattern id="ramp-${deckNum}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <rect width="5" height="10" fill="#9ca3af"/>
+                <rect x="5" width="5" height="10" fill="#6b7280"/>
+              </pattern>
+            `;
+            svg.appendChild(defs);
+
+            // ── Hull outline path ──────────────────────────────────────────────
+            // Stern (left) is flat; bow (right) is a smooth bezier curve
+            const ox = PORT_W; // x offset = left margin for PORT label
+            const path = [
+                `M ${ox} ${hullTop}`,
+                `L ${ox + bowStart} ${hullTop}`,
+                // Upper bow curve: flat top → tip
+                `C ${ox + x1e} ${hullTop}, ${tipX - bowExt * 0.15} ${hullTop + H * 0.28}, ${tipX} ${hullMid}`,
+                // Lower bow curve: tip → flat bottom
+                `C ${tipX - bowExt * 0.15} ${hullBot - H * 0.28}, ${ox + x1e} ${hullBot}, ${ox + bowStart} ${hullBot}`,
+                `L ${ox} ${hullBot}`,
+                'Z'
+            ].join(' ');
+
+            // Grid fill rect (inside hull — clips at hull edges, good enough for plan view)
+            const gridRect = document.createElementNS(NS, 'rect');
+            gridRect.setAttribute('x',      ox);
+            gridRect.setAttribute('y',      hullTop);
+            gridRect.setAttribute('width',  x1e + bowExt);
+            gridRect.setAttribute('height', H);
+            gridRect.setAttribute('fill',   `url(#grid-${deckNum})`);
+            gridRect.setAttribute('pointer-events', 'none');
+            svg.appendChild(gridRect);
+
+            // Hull path
+            const hullEl = document.createElementNS(NS, 'path');
+            hullEl.setAttribute('d', path);
+            hullEl.setAttribute('class', 'plan-hull');
+            svg.appendChild(hullEl);
+
+            // PORT centerline (horizontal dashed)
+            const cl = document.createElementNS(NS, 'line');
+            cl.setAttribute('x1', ox);       cl.setAttribute('y1', hullMid);
+            cl.setAttribute('x2', ox + x1e); cl.setAttribute('y2', hullMid);
+            cl.setAttribute('class', 'plan-centerline');
+            cl.setAttribute('pointer-events', 'none');
+            svg.appendChild(cl);
+
+            // Hold dividers (vertical dashed lines: between 4/3, 3/2, 2/1)
+            [x4e, x3e, x2e].forEach(xd => {
+                const dl = document.createElementNS(NS, 'line');
+                dl.setAttribute('x1', ox + xd); dl.setAttribute('y1', hullTop);
+                dl.setAttribute('x2', ox + xd); dl.setAttribute('y2', hullBot);
+                dl.setAttribute('class', 'plan-divider');
+                dl.setAttribute('pointer-events', 'none');
+                svg.appendChild(dl);
+            });
+
+            // Column labels above hull (4 3 2 1)
+            [
+                { n: 4, cx: (x4s + x4e) / 2 },
+                { n: 3, cx: (x3s + x3e) / 2 },
+                { n: 2, cx: (x2s + x2e) / 2 },
+                { n: 1, cx: (x1s + x1e) / 2 },
+            ].forEach(({ n, cx }) => {
+                const t = document.createElementNS(NS, 'text');
+                t.setAttribute('x', ox + cx);
+                t.setAttribute('y', hullTop - 14);
+                t.setAttribute('text-anchor', 'middle');
+                t.setAttribute('class', 'plan-col-label');
+                t.textContent = n;
+                svg.appendChild(t);
+            });
+
+            // PORT / STBD side labels
+            const portLbl = document.createElementNS(NS, 'text');
+            portLbl.setAttribute('x', PORT_W - 4);
+            portLbl.setAttribute('y', hullTop + H * 0.25);
+            portLbl.setAttribute('text-anchor', 'end');
+            portLbl.setAttribute('class', 'plan-side-text');
+            portLbl.textContent = 'PORT';
+            svg.appendChild(portLbl);
+
+            const stbdLbl = document.createElementNS(NS, 'text');
+            stbdLbl.setAttribute('x', PORT_W - 4);
+            stbdLbl.setAttribute('y', hullTop + H * 0.78);
+            stbdLbl.setAttribute('text-anchor', 'end');
+            stbdLbl.setAttribute('class', 'plan-side-text');
+            stbdLbl.textContent = 'STBD';
+            svg.appendChild(stbdLbl);
+
+            // ── Per-hold interactive groups ────────────────────────────────────
+            const holds = [
+                { holdNum: 4, xs: x4s, xe: x4e },
+                { holdNum: 3, xs: x3s, xe: x3e },
+                { holdNum: 2, xs: x2s, xe: x2e },
+                { holdNum: 1, xs: x1s, xe: x1e },
+            ];
+
+            holds.forEach(({ holdNum, xs, xe }) => {
+                const holdKey  = `${vesselId}_${deckNum}_${holdNum}`;
                 const isLocked = AppState.lockedHolds[holdKey] === true;
-                const holdItems = allItems.filter(c => c.hold === i);
-                const holdW = cfg.holdWidths[i] || 800;
-                const holdH = cfg.canvasHeight;
+                const holdW    = xe - xs;
+                const holdItems = deckItems.filter(c => c.hold === holdNum);
+                const carCount  = holdItems.filter(c => c.type === 'car' || c.type === 'backhoe').length;
 
-                let shapeClass = 'shape-rect';
-                if (i === 1) shapeClass = cfg.hold1Shape || 'shape-bow';
-                if (i === 4) shapeClass = cfg.hold4Shape || 'shape-rect';
+                const g = document.createElementNS(NS, 'g');
+                g.setAttribute('class', 'plan-hold-target');
+                g.setAttribute('data-hold', holdNum);
 
-                // Outer cell
-                const cell = document.createElement('div');
-                cell.className = 'plan-hold-cell';
-                cell.style.width = holdW + 'px';
-                cell.style.height = holdH + 'px';
-                cell.title = `DECK ${deck} HOLD ${i} — คลิกเพื่อแก้ไข`;
-                cell.onclick = () => selectHold(i);
+                // ── Transparent click / hover background ─────────────────────
+                const bgRect = document.createElementNS(NS, 'rect');
+                bgRect.setAttribute('x',      ox + xs);
+                bgRect.setAttribute('y',      hullTop);
+                bgRect.setAttribute('width',  holdW);
+                bgRect.setAttribute('height', H);
+                bgRect.setAttribute('class',  'hold-bg');
+                g.appendChild(bgRect);
 
-                // Canvas inside cell
-                const canvas = document.createElement('div');
-                canvas.className = `hold-canvas ${shapeClass}`;
-                canvas.style.background = cfg.canvasBg;
-                canvas.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)`;
-                canvas.style.backgroundSize = '20px 20px';
-                canvas.style.width = holdW + 'px';
-                canvas.style.height = holdH + 'px';
-                canvas.style.boxShadow = isLocked ? 'inset 0 0 0 3px #ef4444' : 'inset 0 0 0 2px rgba(0,0,0,0.12)';
-
-                // PORT/STBD divider
-                const divider = document.createElement('div');
-                divider.className = 'plan-port-divider';
-                canvas.appendChild(divider);
-
-                // Big faded hold label
-                const bigLabel = document.createElement('div');
-                bigLabel.className = 'plan-hold-label';
-                bigLabel.textContent = `H${i}`;
-                canvas.appendChild(bigLabel);
-
-                // Top badge with lock icon
-                const badge = document.createElement('div');
-                badge.className = 'plan-hold-badge';
-                badge.innerHTML = `${isLocked ? '<i class="fa-solid fa-lock mr-1 text-red-400"></i>' : ''}<span>HOLD ${i}</span>`;
-                canvas.appendChild(badge);
-
-                // Car count
-                const carCount = holdItems.filter(c => c.type === 'car' || c.type === 'backhoe').length;
-                if (carCount > 0) {
-                    const countBadge = document.createElement('div');
-                    countBadge.className = 'plan-hold-count';
-                    countBadge.innerHTML = `<i class="fa-solid fa-car" style="font-size:8px;margin-right:3px;"></i>${carCount}`;
-                    canvas.appendChild(countBadge);
+                // ── Lock red border ───────────────────────────────────────────
+                if (isLocked) {
+                    const lr = document.createElementNS(NS, 'rect');
+                    lr.setAttribute('x',      ox + xs + 1.5);
+                    lr.setAttribute('y',      hullTop + 1.5);
+                    lr.setAttribute('width',  holdW - 3);
+                    lr.setAttribute('height', H - 3);
+                    lr.setAttribute('class',  'plan-lock-border');
+                    g.appendChild(lr);
                 }
 
-                // Structure lines for this hold
-                const holdStructureLines = AppState.structureLines ? AppState.structureLines.filter(l => l.holdKey === holdKey) : [];
-                holdStructureLines.forEach(line => {
-                    const dx = line.x2 - line.x1, dy = line.y2 - line.y1;
-                    const len = Math.sqrt(dx*dx + dy*dy);
-                    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                    const lineEl = document.createElement('div');
-                    lineEl.className = 'plan-structure-line';
-                    lineEl.style.cssText = `left:${line.x1}px;top:${line.y1 - (line.thickness||cfg.lineThickness)/2}px;width:${len}px;height:${line.thickness||cfg.lineThickness}px;transform:rotate(${angle}deg);`;
-                    canvas.appendChild(lineEl);
+                // ── Structure lines ───────────────────────────────────────────
+                const slines = (AppState.structureLines || []).filter(l => l.holdKey === holdKey);
+                slines.forEach(line => {
+                    const sl = document.createElementNS(NS, 'line');
+                    sl.setAttribute('x1', ox + xs + line.x1);
+                    sl.setAttribute('y1', hullTop + line.y1);
+                    sl.setAttribute('x2', ox + xs + line.x2);
+                    sl.setAttribute('y2', hullTop + line.y2);
+                    sl.setAttribute('stroke', '#374151');
+                    sl.setAttribute('stroke-width', line.thickness || cfg.lineThickness);
+                    sl.setAttribute('stroke-linecap', 'round');
+                    sl.setAttribute('pointer-events', 'none');
+                    g.appendChild(sl);
                 });
 
-                // Cargo items
+                // ── Cargo items ───────────────────────────────────────────────
                 holdItems.forEach(c => {
-                    const port = AppState.ports.find(p => p.id === c.portId);
-                    const bgColor = port ? port.color : (c.type === 'backhoe' ? '#eab308' : c.type === 'pillar' ? '#4b5563' : c.type === 'ramp' ? '#9ca3af' : '#e2e8f0');
-                    const el = document.createElement('div');
-                    el.style.cssText = `position:absolute;left:${c.x}px;top:${c.y}px;width:${c.width||20}px;height:${c.height||40}px;transform:rotate(${c.rotation||0}deg);pointer-events:none;z-index:2;`;
+                    const port    = AppState.ports.find(p => p.id === c.portId);
+                    const fillClr = port ? port.color
+                        : c.type === 'backhoe' ? '#eab308'
+                        : c.type === 'pillar'  ? '#4b5563'
+                        : c.type === 'ramp'    ? `url(#ramp-${deckNum})`
+                        : '#e2e8f0';
+                    const cw = c.width  || 20;
+                    const ch = c.height || 40;
+                    const cx = ox + xs + c.x + cw / 2;
+                    const cy = hullTop + c.y + ch / 2;
+                    const rot = c.rotation || 0;
+                    const tfm = rot ? `rotate(${rot} ${cx} ${cy})` : '';
 
                     if (c.type === 'pillar') {
-                        el.innerHTML = `<div style="width:100%;height:100%;background:#4b5563;border-radius:50%;border:1.5px solid #1f2937;"></div>`;
-                    } else if (c.type === 'ramp') {
-                        el.innerHTML = `<div style="width:100%;height:100%;background:repeating-linear-gradient(45deg,#9ca3af,#9ca3af 5px,#6b7280 5px,#6b7280 10px);border:1.5px solid #4b5563;"></div>`;
+                        // เสา = วงกลม
+                        const el = document.createElementNS(NS, 'ellipse');
+                        el.setAttribute('cx', cx); el.setAttribute('cy', cy);
+                        el.setAttribute('rx', cw / 2); el.setAttribute('ry', ch / 2);
+                        el.setAttribute('fill', '#4b5563');
+                        el.setAttribute('stroke', '#1f2937');
+                        el.setAttribute('stroke-width', '1.5');
+                        if (tfm) el.setAttribute('transform', tfm);
+                        el.setAttribute('pointer-events', 'none');
+                        g.appendChild(el);
+                    } else if (c.type === 'car' || c.type === 'backhoe') {
+                        // รถ/แบคโฮ = pentagon หน้าแหลม (ชี้ขึ้น = หัวรถ)
+                        const x0 = ox + xs + c.x;
+                        const y0 = hullTop + c.y;
+                        const pts = [
+                            `${x0 + cw/2},${y0}`,              // หัวรถ (ปลายแหลม)
+                            `${x0 + cw},${y0 + ch * 0.24}`,    // ไหล่ขวา
+                            `${x0 + cw},${y0 + ch}`,            // ท้ายขวา
+                            `${x0},${y0 + ch}`,                 // ท้ายซ้าย
+                            `${x0},${y0 + ch * 0.24}`,          // ไหล่ซ้าย
+                        ].join(' ');
+                        const el = document.createElementNS(NS, 'polygon');
+                        el.setAttribute('points', pts);
+                        el.setAttribute('fill',   fillClr);
+                        el.setAttribute('stroke', 'rgba(0,0,0,0.40)');
+                        el.setAttribute('stroke-width', '0.8');
+                        el.setAttribute('stroke-linejoin', 'round');
+                        if (tfm) el.setAttribute('transform', tfm);
+                        el.setAttribute('pointer-events', 'none');
+                        g.appendChild(el);
+
+                        // ไฮไลท์หัวรถ (แถบขาวเล็กๆ บริเวณกระจก)
+                        const windY = y0 + ch * 0.30;
+                        const windH = ch * 0.14;
+                        const wr = document.createElementNS(NS, 'rect');
+                        wr.setAttribute('x',      x0 + cw * 0.18);
+                        wr.setAttribute('y',      windY);
+                        wr.setAttribute('width',  cw * 0.64);
+                        wr.setAttribute('height', windH);
+                        wr.setAttribute('rx', '1');
+                        wr.setAttribute('fill', 'rgba(255,255,255,0.55)');
+                        wr.setAttribute('pointer-events', 'none');
+                        if (tfm) wr.setAttribute('transform', tfm);
+                        g.appendChild(wr);
+
+                        // VIN label
+                        if (c.vin) {
+                            const vt = document.createElementNS(NS, 'text');
+                            vt.setAttribute('x', cx);
+                            vt.setAttribute('y', y0 + ch - 2);
+                            vt.setAttribute('text-anchor', 'middle');
+                            vt.setAttribute('font-size', '5');
+                            vt.setAttribute('font-weight', '900');
+                            vt.setAttribute('fill', 'rgba(0,0,0,0.70)');
+                            vt.setAttribute('pointer-events', 'none');
+                            if (tfm) vt.setAttribute('transform', tfm);
+                            vt.textContent = c.vin.slice(-5);
+                            g.appendChild(vt);
+                        }
                     } else {
-                        const vinDisplay = c.vin ? c.vin.slice(-5) : '';
-                        el.innerHTML = `<div style="width:100%;height:100%;background:${bgColor};border-radius:4px 4px 2px 2px;border:1px solid rgba(0,0,0,0.35);box-shadow:0 1px 3px rgba(0,0,0,0.2);">
-                            ${vinDisplay ? `<div style="position:absolute;bottom:1px;left:0;right:0;font-size:5px;font-weight:900;text-align:center;color:rgba(0,0,0,0.75);overflow:hidden;white-space:nowrap;">${vinDisplay}</div>` : ''}
-                        </div>`;
+                        // Ramp, Package, etc. = rectangle ปกติ
+                        const el = document.createElementNS(NS, 'rect');
+                        el.setAttribute('x',      ox + xs + c.x);
+                        el.setAttribute('y',      hullTop + c.y);
+                        el.setAttribute('width',  cw);
+                        el.setAttribute('height', ch);
+                        el.setAttribute('rx',     '2');
+                        el.setAttribute('fill',   fillClr);
+                        el.setAttribute('stroke', 'rgba(0,0,0,0.35)');
+                        el.setAttribute('stroke-width', '1');
+                        if (tfm) el.setAttribute('transform', tfm);
+                        el.setAttribute('pointer-events', 'none');
+                        g.appendChild(el);
                     }
-                    canvas.appendChild(el);
                 });
 
-                cell.appendChild(canvas);
-                container.appendChild(cell);
-            }
+                // ── HOLD X badge (top-left) ───────────────────────────────────
+                const BADGE_W = holdNum >= 10 ? 54 : 46, BADGE_H = 17, BADGE_R = 8;
+                const bx = ox + xs + 8, by = hullTop + 8;
+                const br = document.createElementNS(NS, 'rect');
+                br.setAttribute('x', bx); br.setAttribute('y', by);
+                br.setAttribute('width', BADGE_W); br.setAttribute('height', BADGE_H);
+                br.setAttribute('rx', BADGE_R);
+                br.setAttribute('class', 'plan-hold-badge-rect');
+                br.setAttribute('fill', isLocked ? 'rgba(239,68,68,0.75)' : 'rgba(15,23,42,0.50)');
+                br.setAttribute('pointer-events', 'none');
+                g.appendChild(br);
+
+                const bt = document.createElementNS(NS, 'text');
+                bt.setAttribute('x', bx + BADGE_W / 2);
+                bt.setAttribute('y', by + BADGE_H - 5);
+                bt.setAttribute('text-anchor', 'middle');
+                bt.setAttribute('class', 'plan-hold-badge-text');
+                bt.setAttribute('pointer-events', 'none');
+                bt.textContent = isLocked ? `🔒 HOLD ${holdNum}` : `HOLD ${holdNum}`;
+                g.appendChild(bt);
+
+                // ── Car count badge (bottom-right) ────────────────────────────
+                if (carCount > 0) {
+                    const COUNT_W = 30 + (carCount >= 10 ? 8 : 0), COUNT_H = 15;
+                    const crx = ox + xs + holdW - COUNT_W - 8;
+                    const cry = hullBot - COUNT_H - 8;
+                    const cr = document.createElementNS(NS, 'rect');
+                    cr.setAttribute('x', crx); cr.setAttribute('y', cry);
+                    cr.setAttribute('width', COUNT_W); cr.setAttribute('height', COUNT_H);
+                    cr.setAttribute('rx', 7);
+                    cr.setAttribute('class', 'plan-count-rect');
+                    cr.setAttribute('pointer-events', 'none');
+                    g.appendChild(cr);
+
+                    const ct = document.createElementNS(NS, 'text');
+                    ct.setAttribute('x', crx + COUNT_W / 2);
+                    ct.setAttribute('y', cry + COUNT_H - 4);
+                    ct.setAttribute('text-anchor', 'middle');
+                    ct.setAttribute('class', 'plan-count-text');
+                    ct.setAttribute('pointer-events', 'none');
+                    ct.textContent = `⬡ ${carCount}`;
+                    g.appendChild(ct);
+                }
+
+                // ── Transparent overlay rect on top to catch all clicks ───────
+                const clickRect = document.createElementNS(NS, 'rect');
+                clickRect.setAttribute('x',      ox + xs);
+                clickRect.setAttribute('y',      hullTop);
+                clickRect.setAttribute('width',  holdW);
+                clickRect.setAttribute('height', H);
+                clickRect.setAttribute('fill',   'transparent');
+                clickRect.setAttribute('style',  'cursor:pointer');
+                clickRect.addEventListener('click', () => {
+                    AppState.currentSelection.hold = holdNum;
+                    selectDeck(deckNum);
+                });
+                g.appendChild(clickRect);
+
+                svg.appendChild(g);
+            });
+
+            unit.appendChild(svg);
+            return unit;
         }
 
         // ==========================================
@@ -6193,6 +7424,97 @@
 
     <!-- Selection Summary Popup -->
     <div id="selection-summary-popup"></div>
+
+    <!-- PDF Export Selection Modal -->
+    <div id="pdf-export-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center"
+         style="background:rgba(0,0,0,0.52);backdrop-filter:blur(5px);"
+         onclick="if(event.target===this)closePDFExportModal()">
+        <div class="bg-white rounded-2xl shadow-2xl w-[480px] max-h-[85vh] flex flex-col overflow-hidden"
+             style="font-family:-apple-system,BlinkMacSystemFont,'Space Grotesk','Sarabun',sans-serif;">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-file-pdf text-red-500 text-base"></i>
+                    </div>
+                    <div>
+                        <div class="font-black text-gray-900 text-sm leading-tight">ส่งออก PDF</div>
+                        <div class="text-[11px] text-gray-400 mt-0.5">เลือก Deck / Hold ที่ต้องการส่งออก</div>
+                    </div>
+                </div>
+                <button onclick="closePDFExportModal()"
+                    class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition text-xl font-light">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="overflow-y-auto flex-1 p-5 space-y-5">
+
+                <!-- Quick select buttons -->
+                <div class="flex items-center gap-2">
+                    <button onclick="_pdfSelectAll(true)"
+                        class="px-3 py-1.5 text-xs font-bold bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fa-solid fa-check-double mr-1"></i>เลือกทั้งหมด
+                    </button>
+                    <button onclick="_pdfSelectAll(false)"
+                        class="px-3 py-1.5 text-xs font-bold bg-gray-50 border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-100 transition">
+                        ล้างทั้งหมด
+                    </button>
+                </div>
+
+                <!-- Deck checkboxes (generated dynamically) -->
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">เลือก Deck</div>
+                    <div id="pdf-deck-checkboxes" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Hold checkboxes (fixed 1-4) -->
+                <div>
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">เลือก Hold</div>
+                    <div class="flex gap-2 flex-wrap">
+                        <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors select-none">
+                            <input type="checkbox" class="pdf-hold-cb accent-blue-600" value="1" checked>
+                            <span class="text-sm font-semibold text-gray-700">Hold 1</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors select-none">
+                            <input type="checkbox" class="pdf-hold-cb accent-blue-600" value="2" checked>
+                            <span class="text-sm font-semibold text-gray-700">Hold 2</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors select-none">
+                            <input type="checkbox" class="pdf-hold-cb accent-blue-600" value="3" checked>
+                            <span class="text-sm font-semibold text-gray-700">Hold 3</span>
+                        </label>
+                        <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-colors select-none">
+                            <input type="checkbox" class="pdf-hold-cb accent-blue-600" value="4" checked>
+                            <span class="text-sm font-semibold text-gray-700">Hold 4</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Info note -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex gap-3">
+                    <i class="fa-solid fa-circle-info text-amber-500 text-sm flex-shrink-0 mt-0.5"></i>
+                    <div class="text-[11.5px] text-amber-800 leading-relaxed">
+                        แต่ละหน้าจะแสดง <strong>ผัง Hold</strong> (A4 Landscape) พร้อม
+                        <strong>สรุปยอด Port และ Model</strong> อยู่ที่มุมล่างซ้ายของผัง
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-5 py-4 border-t border-gray-100 flex gap-3 justify-end bg-gray-50/70">
+                <button onclick="closePDFExportModal()"
+                    class="px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition">
+                    ยกเลิก
+                </button>
+                <button onclick="_startPDFExport()"
+                    class="px-5 py-2.5 text-sm font-bold text-white rounded-xl transition flex items-center gap-2 shadow-sm"
+                    style="background:#ef4444;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                    <i class="fa-solid fa-file-pdf"></i> ส่งออก PDF
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Ship Plan Config Modal -->
     <div id="plan-config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);" onclick="if(event.target===this)closePlanConfig()">
