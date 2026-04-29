@@ -1972,39 +1972,6 @@
         .adm-page-header .adm-ph-title{ font-size:14px; font-weight:900; color:#fff; line-height:1.3; }
         .adm-crumb-sep { color: rgba(255,255,255,0.2); font-size: 11px; margin: 0 6px; }
 
-        /* ─── Booking List Management tabs ───────────────────────────── */
-        .bk-tabs {
-            display:flex; gap:4px;
-            padding:10px 20px 0;
-            background:#fff;
-            border-bottom:1px solid #e5e7eb;
-        }
-        .bk-tab {
-            padding:9px 18px;
-            border:1px solid #e5e7eb;
-            border-bottom:none;
-            background:#f1f5f9;
-            color:#64748b;
-            font-size:12.5px; font-weight:700;
-            border-radius:6px 6px 0 0;
-            cursor:pointer;
-            transition:all .15s;
-            display:flex; align-items:center; gap:7px;
-            margin-bottom:-1px;
-        }
-        .bk-tab:hover { background:#e2e8f0; color:#1a3560; }
-        .bk-tab.active {
-            background:#1a3560; color:#fff;
-            border-color:#1a3560;
-        }
-        .bk-tab-badge {
-            background:rgba(255,255,255,0.2);
-            padding:1px 7px; border-radius:10px;
-            font-size:10px; font-weight:800;
-            min-width:18px; text-align:center;
-        }
-        .bk-tab:not(.active) .bk-tab-badge { background:#cbd5e1; color:#475569; }
-
         /* ─── Voyage Management ───────────────────────────────────────── */
         .voy-tbl { width:100%; border-collapse:collapse; font-size:12px; }
         .voy-tbl th { background:#c8ddf5; color:#1a3560; font-weight:700; padding:7px 10px; text-align:left; border:1px solid #a8c4e0; white-space:nowrap; user-select:none; }
@@ -2306,7 +2273,7 @@
                     <!-- ── OPERATIONS ── -->
                     <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:2px;padding:10px 8px 3px">Operations</div>
                     <button id="amenu-booking" onclick="switchAdminMenu('booking')" class="adm-nav" style="width:100%;display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;font-size:12px;font-weight:600;text-align:left">
-                        <i class="fa-solid fa-clipboard-list"   style="width:14px;text-align:center;font-size:12px"></i><span style="flex:1">Booking List</span><span class="adm-badge" id="badge-booking">0</span></button>
+                        <i class="fa-solid fa-book"             style="width:14px;text-align:center;font-size:12px"></i><span style="flex:1">Booking Report</span><span class="adm-badge" id="badge-booking">0</span></button>
 
                     <!-- ── REPORTS ── -->
                     <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:2px;padding:10px 8px 3px">Reports</div>
@@ -2853,126 +2820,36 @@
                     </div>
                 </div>
 
-                <!-- ░░ PAGE 9: BOOKING LIST ░░ -->
+                <!-- ░░ PAGE 9: BOOKING REPORT ░░ -->
                 <div id="admin-page-booking" class="adm-page hidden">
                     <div class="adm-page-header">
-                        <div class="crumb-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                        <div><div class="adm-ph-sub">Operations</div><div class="adm-ph-title">Booking List Management</div></div>
+                        <div class="crumb-icon"><i class="fa-solid fa-book"></i></div>
+                        <div><div class="adm-ph-sub">Operations</div><div class="adm-ph-title">Booking Report</div></div>
                     </div>
 
-                    <!-- Tabs -->
-                    <div class="bk-tabs">
-                        <button id="bk-tab-btn-list" class="bk-tab active" onclick="switchBkTab('list')">
-                            <i class="fa-solid fa-clipboard-list"></i> Booking List
-                        </button>
-                        <button id="bk-tab-btn-bybl" class="bk-tab" onclick="switchBkTab('bybl')">
-                            <i class="fa-solid fa-book"></i> Book
-                            <span class="bk-tab-badge" id="bk-tab-bybl-count">0</span>
-                        </button>
-                    </div>
-
-                    <!-- ── Tab pane: Booking List (existing) ── -->
-                    <div id="bk-pane-list">
                     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px">
-                        <!-- Add booking form -->
+                        <!-- Filter -->
                         <div class="adm-ent-card">
-                            <div class="adm-ent-toolbar"><i class="fa-solid fa-plus" style="color:#1a3560;font-size:11px"></i><span class="adm-ent-toolbar-title">Register Booking</span></div>
-                            <div style="padding:14px 20px">
-                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px">
-                                    <div><label class="adm-ent-label">Voyage</label>
-                                        <select id="bk-voyage" style="width:100%"><option value="">-- เลือก Voyage --</option></select></div>
-                                    <div><label class="adm-ent-label">Booking No.</label><input type="text" id="bk-no" placeholder="เช่น BK-2024-001" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">VIN / Unit No.</label><input type="text" id="bk-vin" placeholder="VIN" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">Cargo Type</label>
-                                        <select id="bk-cargo-type" style="width:100%"><option value="">-- เลือก --</option></select></div>
-                                    <div><label class="adm-ent-label">POL</label>
-                                        <select id="bk-pol" style="width:100%"><option value="">-- เลือก Port --</option></select></div>
-                                    <div><label class="adm-ent-label">POD</label>
-                                        <select id="bk-pod" style="width:100%"><option value="">-- เลือก Port --</option></select></div>
-                                </div>
-                                <div style="display:grid;grid-template-columns:90px 90px 90px 90px 90px 90px 90px 1fr;gap:10px;margin-bottom:12px">
-                                    <div><label class="adm-ent-label">Unit</label><input type="number" id="bk-unit" step="1" placeholder="100" style="width:100%" min="0"></div>
-                                    <div><label class="adm-ent-label">Remain</label><input type="number" id="bk-remain" step="1" placeholder="0" style="width:100%" min="0"></div>
-                                    <div><label class="adm-ent-label">Length (m)</label><input type="number" id="bk-len" step="0.01" placeholder="4.50" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">Width (m)</label><input type="number" id="bk-wid" step="0.01" placeholder="1.80" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">Height (m)</label><input type="number" id="bk-height" step="0.01" placeholder="1.50" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">Weight (t)</label><input type="number" id="bk-weight" step="0.01" placeholder="1.50" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">NOM (sq)</label><input type="number" id="bk-nom" step="0.1" placeholder="8.1" style="width:100%"></div>
-                                    <div><label class="adm-ent-label">Axle Load (t)</label><input type="number" id="bk-axle" step="0.01" placeholder="2.5" style="width:100%"></div>
-                                </div>
-                                <div style="display:grid;grid-template-columns:120px 1fr;gap:10px;margin-bottom:12px">
-                                    <div><label class="adm-ent-label">Status</label>
-                                        <select id="bk-status" style="width:100%"><option value="booked">Booked</option><option value="confirmed">Confirmed</option><option value="loaded">Loaded</option><option value="discharged">Discharged</option></select></div>
-                                    <div><label class="adm-ent-label">Remark</label><input type="text" id="bk-remark" placeholder="หมายเหตุ" style="width:100%"></div>
-                                </div>
-                                <button onclick="addBooking()" class="adm-ent-btn adm-ent-btn-navy"><i class="fa-solid fa-plus"></i> Register Booking</button>
+                            <div class="adm-ent-toolbar" style="gap:10px;flex-wrap:wrap">
+                                <i class="fa-solid fa-filter" style="color:#1a3560;font-size:11px"></i>
+                                <span class="adm-ent-toolbar-title">เลือกเรือ:</span>
+                                <select id="bl-filter-vessel" onchange="renderBookingByBL()" style="font-size:12px;padding:5px 10px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb">
+                                    <option value="">All Vessels</option>
+                                </select>
+                                <input type="text" id="bl-filter-search" placeholder="ค้นหา BL / Model / VIN" oninput="renderBookingByBL()" style="font-size:12px;padding:5px 10px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb;min-width:200px">
+                                <button onclick="printBookReport()" class="adm-ent-btn adm-ent-btn-slate" style="font-size:11px;padding:5px 12px">
+                                    <i class="fa-solid fa-print"></i> Print / PDF
+                                </button>
+                                <div style="margin-left:auto;font-size:11px;color:#6b7280">รวม: <strong id="bl-total">0</strong> Book</div>
                             </div>
                         </div>
-                        <!-- Filter + Table -->
-                        <div class="adm-ent-card">
-                            <div class="adm-ent-toolbar" style="flex-wrap:wrap;gap:8px">
-                                <i class="fa-solid fa-clipboard-list" style="color:#1a3560;font-size:11px"></i>
-                                <span class="adm-ent-toolbar-title">Booking List</span>
-                                <select id="bk-filter-voyage" onchange="renderBookingList()" style="font-size:11px;padding:4px 8px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb">
-                                    <option value="">All Voyages</option></select>
-                                <select id="bk-filter-status" onchange="renderBookingList()" style="font-size:11px;padding:4px 8px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb">
-                                    <option value="">All Status</option>
-                                    <option value="booked">Booked</option><option value="confirmed">Confirmed</option>
-                                    <option value="loaded">Loaded</option><option value="discharged">Discharged</option></select>
-                                <input type="text" id="bk-search" placeholder="ค้นหา VIN / Booking No." oninput="renderBookingList()"
-                                    style="font-size:11px;padding:4px 8px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb;min-width:180px">
-                                <div style="margin-left:auto;font-size:11px;color:#6b7280">รวม: <strong id="bk-count">0</strong> รายการ</div>
-                            </div>
-                            <div style="overflow-x:auto">
-                            <table class="adm-ent-tbl" style="min-width:900px"><thead><tr>
-                                <th style="width:32px;text-align:center">#</th>
-                                <th style="width:100px">Booking No.</th>
-                                <th style="width:100px">VIN / Unit</th>
-                                <th style="width:80px">Cargo Type</th>
-                                <th style="width:70px">POL</th><th style="width:70px">POD</th>
-                                <th style="width:50px;text-align:center">Unit</th>
-                                <th style="width:55px;text-align:center">Remain</th>
-                                <th style="width:50px;text-align:center">L(m)</th>
-                                <th style="width:50px;text-align:center">W(m)</th>
-                                <th style="width:50px;text-align:center">H(m)</th>
-                                <th style="width:55px;text-align:center">Wt(t)</th>
-                                <th style="width:55px;text-align:center">NOM</th>
-                                <th style="width:60px;text-align:center">AxleLoad</th>
-                                <th style="width:80px;text-align:center">Status</th>
-                                <th style="width:44px;text-align:center">ลบ</th>
-                            </tr></thead>
-                            <tbody id="bk-list"><tr><td colspan="16" style="text-align:center;padding:28px;color:#9ca3af">ยังไม่มีข้อมูล Booking</td></tr></tbody></table>
-                            </div>
-                        </div>
-                    </div>
-                    </div><!-- end bk-pane-list -->
-
-                    <!-- ── Tab pane: Book (BL Report) ── -->
-                    <div id="bk-pane-bybl" class="hidden">
-                        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px">
-                            <!-- Filter -->
-                            <div class="adm-ent-card">
-                                <div class="adm-ent-toolbar" style="gap:10px;flex-wrap:wrap">
-                                    <i class="fa-solid fa-filter" style="color:#1a3560;font-size:11px"></i>
-                                    <span class="adm-ent-toolbar-title">เลือกเรือ:</span>
-                                    <select id="bl-filter-vessel" onchange="renderBookingByBL()" style="font-size:12px;padding:5px 10px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb">
-                                        <option value="">All Vessels</option>
-                                    </select>
-                                    <input type="text" id="bl-filter-search" placeholder="ค้นหา BL / Model / VIN" oninput="renderBookingByBL()" style="font-size:12px;padding:5px 10px;border:1px solid #b0c8e0;border-radius:2px;background:#eef4fb;min-width:200px">
-                                    <button onclick="printBookReport()" class="adm-ent-btn adm-ent-btn-slate" style="font-size:11px;padding:5px 12px">
-                                        <i class="fa-solid fa-print"></i> Print / PDF
-                                    </button>
-                                    <div style="margin-left:auto;font-size:11px;color:#6b7280">รวม: <strong id="bl-total">0</strong> Book</div>
-                                </div>
-                            </div>
-                            <!-- Vessel summary banner (only visible when a vessel is selected) -->
-                            <div id="bl-vessel-summary"></div>
-                            <!-- BL cards -->
-                            <div id="bl-cards" style="display:flex;flex-direction:column;gap:12px">
-                                <div class="adm-ent-card" style="padding:40px;text-align:center;color:#9ca3af">
-                                    <i class="fa-solid fa-book" style="font-size:32px;margin-bottom:10px;display:block;color:#c8ddf5"></i>
-                                    ยังไม่มีข้อมูล
-                                </div>
+                        <!-- Vessel summary banner (only visible when a vessel is selected) -->
+                        <div id="bl-vessel-summary"></div>
+                        <!-- BL cards -->
+                        <div id="bl-cards" style="display:flex;flex-direction:column;gap:12px">
+                            <div class="adm-ent-card" style="padding:40px;text-align:center;color:#9ca3af">
+                                <i class="fa-solid fa-book" style="font-size:32px;margin-bottom:10px;display:block;color:#c8ddf5"></i>
+                                ยังไม่มีข้อมูล
                             </div>
                         </div>
                     </div>
@@ -4791,18 +4668,6 @@
             });
         }
 
-        // ─── Booking List tabs (Booking List vs By BL) ───────────────────
-        function switchBkTab(name) {
-            ['list', 'bybl'].forEach(t => {
-                const btn  = document.getElementById('bk-tab-btn-' + t);
-                const pane = document.getElementById('bk-pane-' + t);
-                if (btn)  btn.classList.toggle('active', t === name);
-                if (pane) { if (t === name) pane.classList.remove('hidden'); else pane.classList.add('hidden'); }
-            });
-            if (name === 'bybl') renderBookingByBL();
-            if (name === 'list') renderBookingList();
-        }
-
         // Book Report: source = MANIFEST upload, cross-ref cargoData for loaded location
         function renderBookingByBL() {
             const wrap = document.getElementById('bl-cards');
@@ -5037,10 +4902,16 @@
                             <div>${locHtml || '<span style="color:#9ca3af;font-style:italic">ยังไม่มีรถถูก Loaded</span>'}</div>
                         </div>
                         <div>
-                            <button onclick="_toggleBlVinTbl('${tblId}', this)"
-                                style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:700">
-                                <i class="fa-solid fa-chevron-right" style="margin-right:6px;transition:transform .15s"></i>ดูรายการ VIN ทั้งหมด (${items.length})
-                            </button>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button onclick="_toggleBlVinTbl('${tblId}', this)"
+                                    style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:700">
+                                    <i class="fa-solid fa-chevron-right" style="margin-right:6px;transition:transform .15s"></i>ดูรายการ VIN ทั้งหมด (${items.length})
+                                </button>
+                                <button onclick='printBookReport(${JSON.stringify(bl)})'
+                                    style="background:#f1f5f9;border:1px solid #cbd5e1;color:#1a3560;border-radius:3px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:700">
+                                    <i class="fa-solid fa-print" style="margin-right:6px"></i>Print BL นี้
+                                </button>
+                            </div>
                             <div id="${tblId}" class="hidden" style="margin-top:10px;max-height:340px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:3px">
                                 <table class="adm-ent-tbl" style="margin:0">
                                     <thead style="position:sticky;top:0;z-index:1">
@@ -5071,6 +4942,224 @@
             el.classList.toggle('hidden', !open);
             const icon = btn.querySelector('i');
             if (icon) icon.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+        }
+
+        // ─── Print/PDF for Booking Report ─────────────────────────────────
+        // Pass a bkNo string to print just that one BL; omit to print all visible BLs.
+        function printBookReport(singleBl) {
+            const fvId    = (document.getElementById('bl-filter-vessel')||{}).value || '';
+            const fsearch = ((document.getElementById('bl-filter-search')||{}).value || '').toLowerCase();
+            const vessel  = fvId ? (AppState.vessels || []).find(v => v.id === fvId) : null;
+
+            // Build cargo lookup for cross-referencing loaded position
+            const cargoByVessel = {};
+            (AppState.cargoData || []).forEach(c => {
+                if (!c.vesselId || !c.vin) return;
+                if (!['car','backhoe'].includes(c.type)) return;
+                if (!cargoByVessel[c.vesselId]) cargoByVessel[c.vesselId] = [];
+                cargoByVessel[c.vesselId].push(c);
+            });
+            const findLoaded = (m) => {
+                const list = cargoByVessel[m.vesselId];
+                if (!list || !m.vin) return null;
+                const mvin = m.vin.toUpperCase();
+                return list.find(c => c.vin && mvin.endsWith(c.vin.toUpperCase())) || null;
+            };
+
+            // Source: manifest rows with bkNo, optionally filtered
+            let manifests = (AppState.manifestData || []).filter(m => m.bkNo && m.vin);
+            if (fvId)    manifests = manifests.filter(m => m.vesselId === fvId);
+
+            // Group by bkNo
+            const byBL = {};
+            manifests.forEach(m => {
+                if (!byBL[m.bkNo]) byBL[m.bkNo] = [];
+                byBL[m.bkNo].push(m);
+            });
+            let blKeys = Object.keys(byBL);
+            if (singleBl) {
+                blKeys = blKeys.filter(bl => bl === singleBl);
+            } else if (fsearch) {
+                blKeys = blKeys.filter(bl => {
+                    if (bl.toLowerCase().includes(fsearch)) return true;
+                    return byBL[bl].some(m =>
+                        (m.model || '').toLowerCase().includes(fsearch) ||
+                        (m.vin   || '').toLowerCase().includes(fsearch)
+                    );
+                });
+            }
+            blKeys.sort();
+
+            if (!blKeys.length) {
+                return alert('ไม่มีข้อมูล Booking ที่จะพิมพ์');
+            }
+
+            const totalCars  = blKeys.reduce((s, bl) => s + byBL[bl].length, 0);
+            const loadedCars = blKeys.reduce((s, bl) => s + byBL[bl].filter(m => findLoaded(m)).length, 0);
+            const pendingCars = totalCars - loadedCars;
+            const dateStr = new Date().toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+
+            // Per-BL sections
+            const sections = blKeys.map((bl, idx) => {
+                const items = byBL[bl];
+                const enriched = items.map(m => ({ m, c: findLoaded(m) }));
+                const loadedCnt  = enriched.filter(e => e.c).length;
+                const pendingCnt = items.length - loadedCnt;
+                const vesselId = items[0].vesselId;
+                const v = (AppState.vessels || []).find(x => x.id === vesselId);
+                const vName = v ? v.name : '(ไม่ระบุเรือ)';
+
+                // POD breakdown
+                const podMap = {};
+                items.forEach(m => {
+                    const k = (m.pod || m.port || '').toString().toUpperCase().trim() || '(ไม่ระบุ)';
+                    podMap[k] = (podMap[k] || 0) + 1;
+                });
+                const podLine = Object.entries(podMap)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([k, n]) => `${k} ×${n}`).join(' · ');
+
+                // Model breakdown
+                const modelMap = {};
+                items.forEach(m => {
+                    const md = (m.model || '').trim() || '(ไม่ระบุ)';
+                    modelMap[md] = (modelMap[md] || 0) + 1;
+                });
+                const modelLine = Object.entries(modelMap)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([k, n]) => `${k} ×${n}`).join(' · ');
+
+                // Location breakdown (loaded only)
+                const locMap = {};
+                enriched.forEach(({ c }) => {
+                    if (!c) return;
+                    const k = `D${c.deck ?? '?'}/H${c.hold ?? '?'}`;
+                    locMap[k] = (locMap[k] || 0) + 1;
+                });
+                const locLine = Object.entries(locMap)
+                    .sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }))
+                    .map(([k, n]) => `${k} ×${n}`).join(' · ') || '— ยังไม่มีรถถูก Loaded —';
+
+                // Sort items: loaded first by deck/hold, then pending by VIN
+                const sortedItems = [...enriched].sort((a, b) => {
+                    if (!!a.c !== !!b.c) return a.c ? -1 : 1;
+                    if (a.c && b.c) {
+                        if ((a.c.deck||0) !== (b.c.deck||0)) return (a.c.deck||0) - (b.c.deck||0);
+                        if ((a.c.hold||0) !== (b.c.hold||0)) return (a.c.hold||0) - (b.c.hold||0);
+                    }
+                    return (a.m.vin||'').localeCompare(b.m.vin||'');
+                });
+
+                const tblBody = sortedItems.map(({ m, c }, i) => {
+                    const status = c
+                        ? `<span class="bk-st bk-st-loaded">✓ Loaded</span>`
+                        : `<span class="bk-st bk-st-pending">○ Pending</span>`;
+                    return `<tr>
+                        <td class="ctr">${i+1}</td>
+                        <td class="vin">${m.vin || '—'}</td>
+                        <td>${m.model || '—'}</td>
+                        <td>${(m.pol || '').toString().toUpperCase() || '—'}</td>
+                        <td>${(m.pod || m.port || '').toString().toUpperCase() || '—'}</td>
+                        <td class="ctr">${status}</td>
+                        <td class="ctr">${c ? (c.deck ?? '—') : '—'}</td>
+                        <td class="ctr">${c ? (c.hold ?? '—') : '—'}</td>
+                    </tr>`;
+                }).join('');
+
+                return `
+                <section class="bk-sec ${idx > 0 ? 'bk-pgbk' : ''}">
+                    <div class="bk-sec-head">
+                        <div class="bk-bl">BL: <b>${bl}</b></div>
+                        <div class="bk-vname">${vName}</div>
+                        <div class="bk-stats">
+                            <span>รวม <b>${items.length}</b></span>
+                            <span class="bk-sep">·</span>
+                            <span>Loaded <b style="color:#15803d">${loadedCnt}</b></span>
+                            <span class="bk-sep">·</span>
+                            <span>Pending <b style="color:#b45309">${pendingCnt}</b></span>
+                        </div>
+                    </div>
+                    <table class="bk-meta">
+                        <tr><th>POD:</th><td>${podLine || '—'}</td></tr>
+                        <tr><th>Model:</th><td>${modelLine || '—'}</td></tr>
+                        <tr><th>ตำแหน่ง:</th><td>${locLine}</td></tr>
+                    </table>
+                    <table class="bk-tbl">
+                        <thead>
+                            <tr>
+                                <th style="width:30px">#</th>
+                                <th>VIN</th>
+                                <th style="width:130px">Model</th>
+                                <th style="width:50px">POL</th>
+                                <th style="width:60px">POD</th>
+                                <th style="width:75px">Status</th>
+                                <th style="width:42px">Deck</th>
+                                <th style="width:42px">Hold</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tblBody}</tbody>
+                    </table>
+                </section>`;
+            }).join('');
+
+            const css = `
+body { font-family: 'Segoe UI', Arial, Helvetica, sans-serif; font-size: 11px; color: #111; margin: 18px 22px; }
+h1 { font-size: 20px; font-weight: 900; text-align: center; margin: 0 0 4px; letter-spacing: 1px; text-decoration: underline; }
+.bk-sub { text-align: center; font-size: 10px; color: #555; margin-bottom: 14px; }
+.bk-summary { border: 1px solid #333; padding: 8px 14px; margin-bottom: 18px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; background: #f5f7fb; }
+.bk-summary > div { text-align: center; }
+.bk-summary .lbl { font-size: 9px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+.bk-summary .val { font-size: 16px; font-weight: 900; color: #0f2347; }
+.bk-summary .val.green { color: #15803d; }
+.bk-summary .val.amber { color: #b45309; }
+.bk-sec { margin-bottom: 22px; page-break-inside: avoid; }
+.bk-sec.bk-pgbk { page-break-before: auto; }
+.bk-sec-head { background: #1a3560; color: #fff; padding: 6px 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 12px; }
+.bk-sec-head .bk-bl { font-weight: 700; }
+.bk-sec-head .bk-vname { opacity: .85; font-size: 11px; }
+.bk-sec-head .bk-stats { margin-left: auto; font-size: 11px; }
+.bk-sec-head .bk-sep { opacity: .4; margin: 0 4px; }
+.bk-meta { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 11px; }
+.bk-meta th { text-align: left; width: 80px; padding: 3px 6px; vertical-align: top; color: #475569; font-weight: 800; background: #f1f5f9; border-bottom: 1px solid #e5e7eb; }
+.bk-meta td { padding: 3px 8px; vertical-align: top; border-bottom: 1px solid #e5e7eb; }
+.bk-tbl { width: 100%; border-collapse: collapse; font-size: 10px; }
+.bk-tbl th { background: #c8d4f0; color: #0f2347; font-weight: 800; padding: 4px 5px; text-align: left; border: 1px solid #888; white-space: nowrap; }
+.bk-tbl td { padding: 3px 5px; border: 1px solid #bbb; }
+.bk-tbl td.ctr { text-align: center; }
+.bk-tbl td.vin { font-family: 'Courier New', monospace; font-weight: 700; color: #0f2347; }
+.bk-tbl tbody tr:nth-child(even) { background: #f8fafc; }
+.bk-st { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 9px; font-weight: 800; }
+.bk-st-loaded { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.bk-st-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+@page { margin: 14mm; size: A4; }
+@media print {
+    .bk-sec { page-break-inside: avoid; }
+}`;
+
+            const subParts = [];
+            subParts.push(vessel ? `Vessel: ${vessel.name.toUpperCase()}` : 'All Vessels');
+            subParts.push(`พิมพ์ ${dateStr}`);
+            if (singleBl)       subParts.push(`BL: ${singleBl}`);
+            else if (fsearch)   subParts.push(`ค้นหา: "${fsearch}"`);
+
+            const summaryHtml = singleBl ? '' : `
+                <div class="bk-summary">
+                    <div><div class="lbl">Total Books</div><div class="val">${blKeys.length}</div></div>
+                    <div><div class="lbl">Total Cars</div><div class="val">${totalCars}</div></div>
+                    <div><div class="lbl">Loaded</div><div class="val green">${loadedCars}</div></div>
+                    <div><div class="lbl">Pending</div><div class="val amber">${pendingCars}</div></div>
+                </div>`;
+
+            const headerHtml = `
+                <h1>BOOKING&nbsp;&nbsp;REPORT</h1>
+                <div class="bk-sub">${subParts.join(' · ')}</div>
+                ${summaryHtml}`;
+
+            const winTitle = singleBl ? `Booking Report — ${singleBl}` : 'Booking Report';
+            const win = window.open('', '_blank', 'width=1100,height=850');
+            win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${winTitle}</title><style>${css}</style></head><body>${headerHtml}${sections}</body></html>`);
+            win.document.close();
+            setTimeout(() => { win.focus(); win.print(); }, 600);
         }
 
         function renderBookingGrouping() {
@@ -9239,7 +9328,7 @@
                 if (page) { if (m === menu) page.classList.remove('hidden'); else page.classList.add('hidden'); }
             });
             if (menu === 'vessels')     renderVesselListAdmin();
-            if (menu === 'booking')     { switchBkTab('list'); renderBookingByBL(); /* refresh BL count */ }
+            if (menu === 'booking')     renderBookingByBL();
             if (menu === 'tally-rpt')    _initTallyRptSelects();
             if (menu === 'loading-list') _initLoadingListSelects();
             if (menu === 'settings')    renderSettingsPage();
